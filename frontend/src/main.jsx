@@ -4,14 +4,23 @@ import './index.css'
 import App from './App.jsx'
 import AdminAuthProvider from './Components/Context/AdminAuthProvider.jsx'
 import AdminProductsProvider from './Components/Context/AdminProductsProvider.jsx'
+import SupplierAuthProvider from './Components/Context/SupplierAuthProvider.jsx'
+import DebtsProvider from './Components/Context/DebtsProvider.jsx'
+import SoldItemsProvider from './Components/Context/SoldItemsProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AdminProductsProvider>
     <AdminAuthProvider>
+      <SupplierAuthProvider>
+        <DebtsProvider>
+          <SoldItemsProvider>
 
     <App />
-    
+
+          </SoldItemsProvider>
+        </DebtsProvider>
+      </SupplierAuthProvider>
     </AdminAuthProvider>
     </AdminProductsProvider>
   </StrictMode>,

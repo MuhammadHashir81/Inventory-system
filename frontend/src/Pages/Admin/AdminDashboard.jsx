@@ -121,7 +121,7 @@ const AdminDashboard = () => {
         </header>
 
         {/* Content Box */}
-        <div className="bg-gray-50 p-6 rounded-3xl shadow-inner min-h-[60vh] lg:min-h-[70vh] transition-all overflow-auto">
+        <div className="bg-gray-50 p-6 rounded-3xl shadow-inner min-h-[60vh] lg:min-h-[70vh] transition-all overflow-auto ">
           {activeTab === "manage" && <ManageProducts />}
           {activeTab === "add" && <AddProduct />}
           {activeTab === "sales" && <TotalSales />}

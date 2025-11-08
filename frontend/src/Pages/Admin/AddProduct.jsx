@@ -8,7 +8,8 @@ const AddProduct = () => {
 
   const [product, setProduct] = useState({
     name: "",
-    price: "",
+    priceJohrabad: "",
+    priceOther: "",
     category: "",
     description: "",
     inventory: "",
@@ -21,22 +22,35 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if all fields are filled
-    if (!product.name || !product.category || !product.description || !product.price || !product.inventory) {
+    if (
+      !product.name ||
+      !product.category ||
+      !product.description ||
+      !product.priceJohrabad ||
+      !product.priceOther ||
+      !product.inventory
+    ) {
       toast.error("All fields are required");
       return;
     }
 
     const result = await addProduct({
       ...product,
-      price: parseFloat(product.price),
+      priceJohrabad: parseFloat(product.priceJohrabad),
+      priceOther: parseFloat(product.priceOther),
       inventory: parseInt(product.inventory),
     });
 
     if (result.success) {
       toast.success(result.message || "Product added successfully!");
-      // Reset form
-      setProduct({ name: "", price: "", category: "", description: "", inventory: "" });
+      setProduct({
+        name: "",
+        priceJohrabad: "",
+        priceOther: "",
+        category: "",
+        description: "",
+        inventory: "",
+      });
     } else {
       toast.error(result.message || "Failed to add product");
     }
@@ -77,18 +91,30 @@ const AddProduct = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div className="flex flex-col">
-            <label className="text-gray-700 font-medium mb-1 sm:mb-2">Price</label>
+            <label className="text-gray-700 font-medium mb-1 sm:mb-2">Price (Johrabad)</label>
             <input
               type="number"
-              name="price"
-              placeholder="Enter price"
-              value={product.price}
+              name="priceJohrabad"
+              placeholder="Enter price for Johrabad"
+              value={product.priceJohrabad}
               onChange={handleChange}
               className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex flex-col">
+            <label className="text-gray-700 font-medium mb-1 sm:mb-2">Price (Other Cities)</label>
+            <input
+              type="number"
+              name="priceOther"
+              placeholder="Enter price for other cities"
+              value={product.priceOther}
+              onChange={handleChange}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex flex-col sm:col-span-2">
             <label className="text-gray-700 font-medium mb-1 sm:mb-2">Inventory</label>
             <input
               type="number"

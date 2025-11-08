@@ -6,6 +6,9 @@ import cookieParser from "cookie-parser";
 import { configDotenv } from 'dotenv';
 import cors from 'cors' 
 import { adminProductsRouter } from './Routes/adminProducts.route.js';
+import { supplierAuthRouter } from './Routes/supplierAuth.route.js';
+import { debtRouter } from './Routes/debt.route.js';
+import { soldItemRouter } from './Routes/soldItem.route.js';
 configDotenv()
 const app = express()
 const port = 3000
@@ -35,6 +38,18 @@ try {
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
+
+// supplier routes
+
+app.use('/api/supplier',supplierAuthRouter)
+
+// debt route
+app.use('/api/debts',debtRouter)
+
+// sold items
+
+app.use('/api/sold-items',soldItemRouter)
+
 
 // admin routes
 app.use('/api/admin',adminAuthRouter)

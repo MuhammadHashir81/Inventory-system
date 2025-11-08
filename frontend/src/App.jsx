@@ -2,38 +2,47 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./Components/Layout";
 import Home from "./Pages/Home";
 import Login from "./Pages/Login";
-import Signup from "./Pages/Signup";
 import AdminLogin from "./Pages/AdminLogin";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import ManageProducts from "./Pages/Admin/ManageProducts";
-import AddProduct from "./Pages/Admin/AddProduct";
-// import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
+import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
+import Debts from "./Pages/Debts";
+import SupplierProtectedRoute from "./ProtectedRoute/SupplierProtectedRoute";
 
 function App() {
   return (
-    <div>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Layout */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="login" element={<Login />} />
-            <Route path="signup" element={<Signup />} />
-            <Route path="admin-login" element={<AdminLogin />} />
-          </Route>
+    <BrowserRouter>
+      <Routes>
+        {/* Supplier Protected Layout */}
+        <Route
+          path="/"
+          element={
+            <SupplierProtectedRoute>
+              <Layout />
+            </SupplierProtectedRoute>
+          }
+        >
+          <Route index element={<Home />} />
+          <Route path="debts" element={<Debts />} />
+        </Route>
 
-          {/* Admin Dashboard with nested routes */}
-          <Route path="/admin/dashboard" element={
-            // <ProtectedRoute>
+        {/* Public Routes */}
+        <Route path="login" element={<Login />} />
+        <Route path="admin-login" element={<AdminLogin />} />
+
+        {/* Admin Dashboard */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
               <AdminDashboard />
-            // </ProtectedRoute>
-          }>
-            <Route index element={<ManageProducts />} />
-            {/* <Route path="add-product" element={<AddProduct />} /> */}
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ManageProducts />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

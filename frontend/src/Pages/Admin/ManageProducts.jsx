@@ -1,14 +1,8 @@
-import React, { useState, useContext } from "react";
+// ManageProducts.jsx
+import React, { useState, useContext, useEffect } from "react";
 import { Search, Pencil, Trash2 } from "lucide-react";
 import { AdminProductsContext } from "../../Components/Context/AdminProductsProvider";
-import {
-  Modal,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-} from "@mui/material";
+import { Modal, Box, Typography, TextField, Button, Stack } from "@mui/material";
 
 const style = {
   position: "absolute",
@@ -23,11 +17,15 @@ const style = {
 };
 
 const ManageProducts = () => {
-  const { products, deleteProduct, updateProduct } = useContext(AdminProductsContext);
+  const { products, fetchProducts, deleteProduct, updateProduct } = useContext(AdminProductsContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -35,7 +33,12 @@ const ManageProducts = () => {
 
   // --- Modals ---
   const openEditModal = (product) => {
-    setSelectedProduct(product);
+    setSelectedProduct({
+      ...product,
+      priceJohrabad: product.price?.johrabad || "",
+      priceOther: product.price?.other || "",
+      sold: product.sold || 0,
+    });
     setIsEditModalOpen(true);
   };
 
@@ -60,13 +63,21 @@ const ManageProducts = () => {
   };
 
   const handleUpdate = async () => {
+    if (!selectedProduct.name || !selectedProduct.category || !selectedProduct.description) {
+      alert("All fields are required");
+      return;
+    }
+
     await updateProduct(selectedProduct._id, {
       name: selectedProduct.name,
       category: selectedProduct.category,
       description: selectedProduct.description,
-      price: parseFloat(selectedProduct.price),
+      priceJohrabad: parseFloat(selectedProduct.priceJohrabad),
+      priceOther: parseFloat(selectedProduct.priceOther),
       inventory: parseInt(selectedProduct.inventory),
+      sold: parseInt(selectedProduct.sold),
     });
+
     closeEditModal();
   };
 
@@ -92,20 +103,21 @@ const ManageProducts = () => {
         </div>
       </div>
 
-      {/* Table for md+ screens */}
+      {/* Table view for desktop */}
       <div className="overflow-x-auto hidden md:block">
-        <table className="w-full border-collapse text-left text-sm sm:text-base min-w-[600px]">
+        <table className="w-full border-collapse text-left text-sm sm:text-base min-w-[1000px]">
           <thead>
             <tr className="bg-blue-50 text-gray-700 uppercase text-xs sm:text-sm tracking-wider">
-              <th className="px-4 sm:px-6 py-2 rounded-tl-lg">ID</th>
+              <th className="px-4 sm:px-6 py-2 rounded-tl-lg">#</th>
               <th className="px-4 sm:px-6 py-2">Name</th>
               <th className="px-4 sm:px-6 py-2">Category</th>
-              <th className="px-4 sm:px-6 py-2">Price</th>
+              <th className="px-4 sm:px-6 py-2">Price (Johrabad)</th>
+              <th className="px-4 sm:px-6 py-2">Price (Other Cities)</th>
               <th className="px-4 sm:px-6 py-2">Stock</th>
+              <th className="px-4 sm:px-6 py-2">Sold</th>
               <th className="px-4 sm:px-6 py-2 text-center rounded-tr-lg">Actions</th>
             </tr>
           </thead>
-
           <tbody>
             {filteredProducts.map((product, index) => (
               <tr
@@ -117,8 +129,14 @@ const ManageProducts = () => {
                 <td className="px-4 sm:px-6 py-2 text-gray-700">{index + 1}</td>
                 <td className="px-4 sm:px-6 py-2 font-medium text-gray-800">{product.name}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.category}</td>
-                <td className="px-4 sm:px-6 py-2 text-gray-600">Rs. {product.price}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">
+                  Rs. {product.price?.johrabad ?? "N/A"}
+                </td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">
+                  Rs. {product.price?.other ?? "N/A"}
+                </td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.inventory}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.sold ?? 0}</td>
                 <td className="px-2 sm:px-6 py-2 text-center flex justify-center gap-2 sm:gap-3">
                   <button
                     className="text-blue-600 hover:text-blue-800 transition-all"
@@ -141,8 +159,11 @@ const ManageProducts = () => {
 
       {/* Card view for small screens */}
       <div className="flex flex-col gap-4 md:hidden">
-        {filteredProducts.map((product, index) => (
-          <div key={product._id} className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
+        {filteredProducts.map((product) => (
+          <div
+            key={product._id}
+            className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100"
+          >
             <div className="flex justify-between items-center mb-2">
               <span className="font-medium text-gray-800">{product.name}</span>
               <div className="flex gap-2">
@@ -162,8 +183,10 @@ const ManageProducts = () => {
             </div>
             <div className="text-gray-600 text-sm space-y-1">
               <div><strong>Category:</strong> {product.category}</div>
-              <div><strong>Price:</strong> Rs. {product.price}</div>
+              <div><strong>Price (Johrabad):</strong> Rs. {product.price?.johrabad ?? "N/A"}</div>
+              <div><strong>Price (Other):</strong> Rs. {product.price?.other ?? "N/A"}</div>
               <div><strong>Stock:</strong> {product.inventory}</div>
+              <div><strong>Sold:</strong> {product.sold ?? 0}</div>
             </div>
           </div>
         ))}
@@ -175,87 +198,83 @@ const ManageProducts = () => {
         </div>
       )}
 
-      {/* --- Edit Modal --- */}
+      {/* Edit Modal */}
       <Modal open={isEditModalOpen} onClose={closeEditModal}>
         <Box sx={style}>
-          <Typography variant="h6" mb={2}>
-            Edit Product
-          </Typography>
-          {selectedProduct && (
-            <Stack spacing={2}>
-              <TextField
-                label="Name"
-                name="name"
-                value={selectedProduct.name}
-                onChange={handleChange}
-                fullWidth
-              />
-              <TextField
-                label="Category"
-                name="category"
-                value={selectedProduct.category}
-                onChange={handleChange}
-                fullWidth
-              />
-              <TextField
-                label="Description"
-                name="description"
-                value={selectedProduct.description}
-                onChange={handleChange}
-                multiline
-                rows={3}
-                fullWidth
-              />
-              <TextField
-                label="Price"
-                name="price"
-                type="number"
-                value={selectedProduct.price}
-                onChange={handleChange}
-                fullWidth
-              />
-              <TextField
-                label="Inventory"
-                name="inventory"
-                type="number"
-                value={selectedProduct.inventory}
-                onChange={handleChange}
-                fullWidth
-              />
-              <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
-                <Button variant="outlined" onClick={closeEditModal}>
-                  Cancel
-                </Button>
-                <Button variant="contained" onClick={handleUpdate} color="primary">
-                  Save
-                </Button>
-              </Stack>
+          <Typography variant="h6" mb={2}>Edit Product</Typography>
+          <Stack spacing={2}>
+            <TextField
+              label="Name"
+              name="name"
+              value={selectedProduct?.name || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Category"
+              name="category"
+              value={selectedProduct?.category || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Description"
+              name="description"
+              value={selectedProduct?.description || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Price (Johrabad)"
+              name="priceJohrabad"
+              type="number"
+              value={selectedProduct?.priceJohrabad || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Price (Other Cities)"
+              name="priceOther"
+              type="number"
+              value={selectedProduct?.priceOther || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Inventory"
+              name="inventory"
+              type="number"
+              value={selectedProduct?.inventory || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Sold"
+              name="sold"
+              type="number"
+              value={selectedProduct?.sold || 0}
+              onChange={handleChange}
+              fullWidth
+            />
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button variant="outlined" onClick={closeEditModal}>Cancel</Button>
+              <Button variant="contained" onClick={handleUpdate}>Update</Button>
             </Stack>
-          )}
+          </Stack>
         </Box>
       </Modal>
 
-      {/* --- Delete Modal --- */}
+      {/* Delete Modal */}
       <Modal open={isDeleteModalOpen} onClose={closeDeleteModal}>
         <Box sx={style}>
-          <Typography variant="h6" mb={2}>
-            Confirm Delete
+          <Typography variant="h6" mb={2}>Confirm Delete</Typography>
+          <Typography mb={3}>
+            Are you sure you want to delete <strong>{selectedProduct?.name}</strong>?
           </Typography>
-          {selectedProduct && (
-            <>
-              <Typography mb={3}>
-                Are you sure you want to delete <strong>{selectedProduct.name}</strong>?
-              </Typography>
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <Button variant="outlined" onClick={closeDeleteModal}>
-                  Cancel
-                </Button>
-                <Button variant="contained" color="error" onClick={handleDelete}>
-                  Delete
-                </Button>
-              </Stack>
-            </>
-          )}
+          <Stack direction="row" spacing={2} justifyContent="flex-end">
+            <Button variant="outlined" onClick={closeDeleteModal}>Cancel</Button>
+            <Button variant="contained" color="error" onClick={handleDelete}>Delete</Button>
+          </Stack>
         </Box>
       </Modal>
     </div>
