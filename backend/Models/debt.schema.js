@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const debtSchema = new mongoose.Schema({
   soldItemId: { type: mongoose.Schema.Types.ObjectId, ref: "SoldItem", required: true },
   customerName: { type: String, required: true },
+  productName:{type:String,required:true},
   shopName: { type: String },
   city: { type: String, default: "johrabad" },
   totalAmount: { type: Number, required: true },

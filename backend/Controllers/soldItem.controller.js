@@ -1,6 +1,6 @@
 import { SoldItem } from "../Models/soldItem.schema.js";
 import { Product } from "../Models/productSchema.js";
-
+import { Debt } from "../Models/debt.schema.js";
 // Sell Product
 export const sellProduct = async (req, res) => {
   try {
@@ -14,22 +14,15 @@ export const sellProduct = async (req, res) => {
       city
     } = req.body;
 
-    // Validate required fields
     if (!productId || !quantity || !type) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing required fields" });
+      return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    // Find product
     const product = await Product.findById(productId);
     if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    // Check stock
     if (product.inventory < quantity) {
       return res.status(400).json({
         success: false,
@@ -37,7 +30,7 @@ export const sellProduct = async (req, res) => {
       });
     }
 
-    // Calculate prices
+    // ✅ Use your existing city-based pricing
     const pricePerUnit =
       city === "johrabad" ? product.price.johrabad : product.price.other;
 
@@ -45,7 +38,7 @@ export const sellProduct = async (req, res) => {
     const paid = type === "full" ? totalAmount : Number(paidAmount || 0);
     const remainingAmount = totalAmount - paid;
 
-    // Create sold item record
+    // ✅ Create Sold Item
     const soldItem = await SoldItem.create({
       productId,
       productName: product.name,
@@ -61,17 +54,31 @@ export const sellProduct = async (req, res) => {
       isDebtCleared: remainingAmount === 0,
     });
 
-    // Update product stock
+    // ✅ Update Product Stock
     product.inventory -= quantity;
     product.sold += quantity;
     await product.save();
 
-    // Send response
+    // ✅ If it's a partial payment, also create a Debt record
+    if (type === "partial" && remainingAmount > 0) {
+      await Debt.create({
+        soldItemId: soldItem._id,
+        customerName,
+        productName: product.name,
+        shopName,
+        city,
+        totalAmount,
+        paidAmount: paid,
+        remainingAmount,
+        payments: [{ amount: paid }],
+        isCleared: false,
+      });
+    }
+
     res.status(201).json({
       success: true,
       message: "Product sold successfully",
       soldItem,
-      updatedProduct: product,
     });
   } catch (error) {
     console.error("Sell product error:", error);
@@ -80,38 +87,25 @@ export const sellProduct = async (req, res) => {
 };
 
 
-// get sold items
+// sold items
 
-
-
-// Get all sold items
 export const getSoldItems = async (req, res) => {
   try {
-    // Fetch all sold items sorted by newest first
+    // Fetch all sold items, most recent first
     const soldItems = await SoldItem.find()
       .sort({ createdAt: -1 })
-      .populate("productId", "name"); // optional: fetch product name from Product model
+      .populate("productId", "name price inventory"); // Optional: populate product details
 
-    // If no sold items found
-    if (!soldItems || soldItems.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "No sold items found",
-        items: [],
-      });
-    }
-
-    // Return all sold items
     res.status(200).json({
       success: true,
       message: "Sold items fetched successfully",
-      items: soldItems,
+      soldItems,
     });
   } catch (error) {
-    console.error("Get sold items error:", error);
+    console.error("Error fetching sold items:", error);
     res.status(500).json({
       success: false,
-      message: "Server error while fetching sold items",
+      message: "Error fetching sold items",
       error,
     });
   }

@@ -8,6 +8,7 @@ import cors from 'cors'
 import { adminProductsRouter } from './Routes/adminProducts.route.js';
 import { supplierAuthRouter } from './Routes/supplierAuth.route.js';
 import { soldItemRouter } from './Routes/soldItem.route.js';
+import { debtRouter } from './Routes/debt.route.js';
 configDotenv()
 const app = express()
 const port = 3000
@@ -39,12 +40,13 @@ app.get('/', (req, res) => {
 })
 
 // supplier routes
-
 app.use('/api/supplier',supplierAuthRouter)
 
 
-// sold items
+// debt routes
+app.use('/api/debts',debtRouter)
 
+// sold items
 app.use('/api/sold-items',soldItemRouter)
 
 

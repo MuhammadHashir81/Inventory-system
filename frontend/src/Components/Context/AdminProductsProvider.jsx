@@ -22,9 +22,12 @@ const AdminProductsProvider = ({ children }) => {
     try {
       const res = await axios.post(`${apiUrl}/api/sold-items/sell`, { productId, ...data });
       if (res.data.success) {
-        setProducts(products.map(p => 
-          p._id === productId ? res.data.updatedProduct : p
-        ));
+
+        // setProducts(products.map(p => 
+        //   p._id === productId ? res.data.updatedProduct : p
+        // ));
+
+        fetchProducts()
       }
       return res.data;
     } catch (error) {
