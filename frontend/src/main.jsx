@@ -13,13 +13,13 @@ createRoot(document.getElementById('root')).render(
     <AdminProductsProvider>
     <AdminAuthProvider>
       <SupplierAuthProvider>
-        <DebtsProvider>
           <SoldItemsProvider>
+        <DebtsProvider>
 
     <App />
 
-          </SoldItemsProvider>
         </DebtsProvider>
+          </SoldItemsProvider>
       </SupplierAuthProvider>
     </AdminAuthProvider>
     </AdminProductsProvider>

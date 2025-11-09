@@ -15,14 +15,13 @@ export const getDebts = async (req, res) => {
 export const updatePayment = async (req, res) => {
   try {
     const { id } = req.params;
-    let { payment } = req.body; // amount being paid now
+    let { payment } = req.body;
 
     const debt = await Debt.findById(id);
     if (!debt) return res.status(404).json({ success: false, message: "Debt not found" });
 
-    // Prevent overpayment
     if (payment > debt.remainingAmount) {
-      payment = debt.remainingAmount; // cap payment to remaining amount
+      payment = debt.remainingAmount;
     }
 
     debt.paidAmount = parseFloat((debt.paidAmount + payment).toFixed(2));
@@ -36,6 +35,12 @@ export const updatePayment = async (req, res) => {
       await SoldItem.findByIdAndUpdate(debt.soldItemId, {
         isDebtCleared: true,
         remainingAmount: 0,
+        paidAmount: debt.totalAmount,
+      });
+    } else {
+      await SoldItem.findByIdAndUpdate(debt.soldItemId, {
+        paidAmount: debt.paidAmount,
+        remainingAmount: debt.remainingAmount,
       });
     }
 

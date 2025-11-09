@@ -1,12 +1,13 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
-
-const apiUrl = import.meta.env.VITE_BACKEND_URL; // Your backend URL
+import { SoldItemsContext } from "./SoldItemsProvider";
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 export const DebtsContext = createContext();
 
 const DebtsProvider = ({ children }) => {
   const [debts, setDebts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { fetchSoldItems } = useContext(SoldItemsContext); // get fetchSoldItems from sold items context
 
   // Fetch all debts
   const fetchDebts = async () => {
@@ -30,12 +31,15 @@ const DebtsProvider = ({ children }) => {
       });
 
       if (res.data.success) {
-        // Update local debts state
+        // Update debts locally
         setDebts((prevDebts) =>
           prevDebts.map((debt) =>
             debt._id === id ? res.data.debt : debt
           )
         );
+
+        // ✅ Refresh sold items so totals update
+        await fetchSoldItems();
       }
 
       return res.data;

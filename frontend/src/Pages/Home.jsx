@@ -25,6 +25,7 @@ import { DebtsContext } from "../Components/Context/DebtsProvider";
     borderRadius: 3,
     boxShadow: "0 24px 80px rgba(0,0,0,0.12)",
     outline: "none",
+    padding:3
   };
 
   const Home = () => {
@@ -146,7 +147,7 @@ import { DebtsContext } from "../Components/Context/DebtsProvider";
               </Typography>
 
               {/* Stats Bar */}
-              {/* {products.length > 0 && (
+              {products.length > 0 && (
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
                   <Chip 
                     label={`${products.length} Products`} 
@@ -161,7 +162,7 @@ import { DebtsContext } from "../Components/Context/DebtsProvider";
                     sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(220, 38, 38)', fontWeight: 600, px: 1, fontSize: '0.875rem' }} 
                   />
                 </div>
-              )} */}
+              )}
             </div>
           </Fade>
 
@@ -289,7 +290,7 @@ import { DebtsContext } from "../Components/Context/DebtsProvider";
                     Sell Product
                   </Typography>
                   <Typography variant="body2" className="text-gray-600">
-                    {selectedProduct?.name}
+                   <p className="text-lg "> {selectedProduct?.name}</p>
                   </Typography>
                 </div>
                 <IconButton onClick={closeModal} size="small" sx={{ color: 'gray' }}>
@@ -319,8 +320,8 @@ import { DebtsContext } from "../Components/Context/DebtsProvider";
                   }
                 }}
               >
-                <ToggleButton value="full">
-                  <ShoppingCart className="w-4 h-4 mr-2" />
+                <ToggleButton value="full " className="p-3">
+                  <ShoppingCart className="w-4 h-4 mr-2  " />
                   Full Payment
                 </ToggleButton>
                 <ToggleButton value="partial">
