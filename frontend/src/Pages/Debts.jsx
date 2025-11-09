@@ -125,7 +125,7 @@ const Debts = () => {
               >
                 <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-800">Customer Name: {debt.customerName || "Unknown"}</h2>
-                  <h3 className="text-sm text-gray-600 mt-1">Poduct: {debt.productName || "Unknown Product"}</h3>
+                  <h3 className="text-sm text-gray-600 mt-1">{debt.productName || "Unknown Product"}</h3>
                   <span
                     className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-semibold ${
                       debt.isCleared ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
@@ -138,15 +138,15 @@ const Debts = () => {
                 <div className="p-6 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">Total Amount</span>
-                    <span className="font-bold text-gray-800">${debt.totalAmount.toFixed(2)}</span>
+                    <span className="font-bold text-gray-800">{debt.totalAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">Paid</span>
-                    <span className="font-semibold text-green-600">${debt.paidAmount.toFixed(2)}</span>
+                    <span className="font-semibold text-green-600">{debt.paidAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center border-t border-gray-100 pt-2">
                     <span className="text-sm text-gray-500">Remaining</span>
-                    <span className="font-semibold text-red-600">${debt.remainingAmount.toFixed(2)}</span>
+                    <span className="font-semibold text-red-600">{debt.remainingAmount.toFixed(2)}</span>
                   </div>
 
                   {!debt.isCleared && (

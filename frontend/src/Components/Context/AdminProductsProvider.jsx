@@ -42,8 +42,9 @@ const AdminProductsProvider = ({ children }) => {
       const res = await axios.post(`${apiUrl}/api/admin/products/add`, data);
       if (res.data.product) {
         setProducts(prev => [...prev, res.data.product]);
+        
       }
-      return res.data;
+      return { success: true, message: res.data.message || "Product added successfully!" };
     } catch (error) {
       console.error("Add product error:", error);
       return { success: false, message: "Server error" };

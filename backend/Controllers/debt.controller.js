@@ -11,7 +11,7 @@ export const getDebts = async (req, res) => {
   }
 };
 
-// Update payment
+// Update payment and auto-delete if fully paid
 export const updatePayment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -20,9 +20,7 @@ export const updatePayment = async (req, res) => {
     const debt = await Debt.findById(id);
     if (!debt) return res.status(404).json({ success: false, message: "Debt not found" });
 
-    if (payment > debt.remainingAmount) {
-      payment = debt.remainingAmount;
-    }
+    if (payment > debt.remainingAmount) payment = debt.remainingAmount;
 
     debt.paidAmount = parseFloat((debt.paidAmount + payment).toFixed(2));
     debt.remainingAmount = parseFloat((debt.totalAmount - debt.paidAmount).toFixed(2));
@@ -32,48 +30,51 @@ export const updatePayment = async (req, res) => {
       debt.remainingAmount = 0;
       debt.isCleared = true;
 
-      await SoldItem.findByIdAndUpdate(debt.soldItemId, {
-        isDebtCleared: true,
-        remainingAmount: 0,
-        paidAmount: debt.totalAmount,
+      if (debt.soldItemId) {
+        await SoldItem.findByIdAndUpdate(debt.soldItemId, {
+          isDebtCleared: true,
+          remainingAmount: 0,
+          paidAmount: debt.totalAmount,
+        });
+      }
+
+      await Debt.findByIdAndDelete(id);
+      return res.status(200).json({
+        success: true,
+        message: "Payment completed & debt removed",
+        debt: null,
       });
     } else {
-      await SoldItem.findByIdAndUpdate(debt.soldItemId, {
-        paidAmount: debt.paidAmount,
-        remainingAmount: debt.remainingAmount,
-      });
-    }
+      if (debt.soldItemId) {
+        await SoldItem.findByIdAndUpdate(debt.soldItemId, {
+          paidAmount: debt.paidAmount,
+          remainingAmount: debt.remainingAmount,
+        });
+      }
 
-    await debt.save();
-    res.status(200).json({ success: true, message: "Payment updated", debt });
+      await debt.save();
+      res.status(200).json({ success: true, message: "Payment updated", debt });
+    }
   } catch (error) {
     console.error("Error updating payment:", error);
     res.status(500).json({ success: false, message: "Error updating payment", error });
   }
 };
 
-
-// Delete a debt
+// Delete debt manually
 export const deleteDebt = async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Find the debt
     const debt = await Debt.findById(id);
-    if (!debt) {
-      return res.status(404).json({ success: false, message: "Debt not found" });
-    }
+    if (!debt) return res.status(404).json({ success: false, message: "Debt not found" });
 
-    // Optionally update the linked SoldItem to reflect that debt is removed
     if (debt.soldItemId) {
       await SoldItem.findByIdAndUpdate(debt.soldItemId, {
         $unset: { remainingAmount: "", paidAmount: "", isDebtCleared: "" },
       });
     }
 
-    // Delete the debt
     await Debt.findByIdAndDelete(id);
-
     res.status(200).json({ success: true, message: "Debt deleted successfully" });
   } catch (error) {
     console.error("Error deleting debt:", error);
