@@ -4,7 +4,7 @@ import ManageProducts from "./ManageProducts";
 import AddProduct from "./AddProduct";
 import { useNavigate } from "react-router-dom";
 import { AdminAuthContext } from "../../Components/Context/AdminAuthProvider";
-import TotalSales from "./TatalSales";
+import TotalSales from "./TotalSales";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("manage");

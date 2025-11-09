@@ -1,30 +1,51 @@
 import { SoldItem } from "../Models/soldItem.schema.js";
 import { Product } from "../Models/productSchema.js";
-import { Debt } from "../Models/debt.schema.js";
 
 // Sell Product
 export const sellProduct = async (req, res) => {
   try {
     const {
-      productId, type, quantity, paidAmount, customerName, shopName, city
+      productId,
+      type,
+      quantity,
+      paidAmount,
+      customerName,
+      shopName,
+      city
     } = req.body;
 
+    // Validate required fields
     if (!productId || !quantity || !type) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
+    // Find product
     const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
-
-    if (product.inventory < quantity) {
-      return res.status(400).json({ success: false, message: `Not enough stock. Available: ${product.inventory}` });
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
-    const pricePerUnit = city === "johrabad" ? product.price.johrabad : product.price.other;
+    // Check stock
+    if (product.inventory < quantity) {
+      return res.status(400).json({
+        success: false,
+        message: `Not enough stock. Available: ${product.inventory}`,
+      });
+    }
+
+    // Calculate prices
+    const pricePerUnit =
+      city === "johrabad" ? product.price.johrabad : product.price.other;
+
     const totalAmount = pricePerUnit * quantity;
     const paid = type === "full" ? totalAmount : Number(paidAmount || 0);
     const remainingAmount = totalAmount - paid;
 
+    // Create sold item record
     const soldItem = await SoldItem.create({
       productId,
       productName: product.name,
@@ -37,7 +58,7 @@ export const sellProduct = async (req, res) => {
       remainingAmount,
       customerName,
       shopName,
-      isDebtCleared: remainingAmount === 0
+      isDebtCleared: remainingAmount === 0,
     });
 
     // Update product stock
@@ -45,50 +66,53 @@ export const sellProduct = async (req, res) => {
     product.sold += quantity;
     await product.save();
 
-    // If partial payment, add to debt
-    if (remainingAmount > 0) {
-      await Debt.create({
-        soldItemId: soldItem._id,
-        customerName,
-        shopName,
-        remainingAmount,
-        city
-      });
-    }
-
-    res.status(201).json({ success: true, soldItem, updatedProduct: product });
+    // Send response
+    res.status(201).json({
+      success: true,
+      message: "Product sold successfully",
+      soldItem,
+      updatedProduct: product,
+    });
   } catch (error) {
     console.error("Sell product error:", error);
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
 
+
+// get sold items
+
+
+
 // Get all sold items
 export const getSoldItems = async (req, res) => {
   try {
-    const items = await SoldItem.find().sort({ createdAt: -1 });
-    res.status(200).json({ success: true, items });
+    // Fetch all sold items sorted by newest first
+    const soldItems = await SoldItem.find()
+      .sort({ createdAt: -1 })
+      .populate("productId", "name"); // optional: fetch product name from Product model
+
+    // If no sold items found
+    if (!soldItems || soldItems.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No sold items found",
+        items: [],
+      });
+    }
+
+    // Return all sold items
+    res.status(200).json({
+      success: true,
+      message: "Sold items fetched successfully",
+      items: soldItems,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
-  }
-};
-
-// Clear debt
-export const clearDebt = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const soldItem = await SoldItem.findById(id);
-    if (!soldItem) return res.status(404).json({ success: false, message: "Sale not found" });
-
-    soldItem.isDebtCleared = true;
-    soldItem.remainingAmount = 0;
-    await soldItem.save();
-
-    await Debt.findOneAndDelete({ soldItemId: id });
-
-    res.status(200).json({ success: true, message: "Debt cleared successfully", soldItem });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
+    console.error("Get sold items error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching sold items",
+      error,
+    });
   }
 };

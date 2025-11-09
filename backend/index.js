@@ -7,7 +7,6 @@ import { configDotenv } from 'dotenv';
 import cors from 'cors' 
 import { adminProductsRouter } from './Routes/adminProducts.route.js';
 import { supplierAuthRouter } from './Routes/supplierAuth.route.js';
-import { debtRouter } from './Routes/debt.route.js';
 import { soldItemRouter } from './Routes/soldItem.route.js';
 configDotenv()
 const app = express()
@@ -43,8 +42,6 @@ app.get('/', (req, res) => {
 
 app.use('/api/supplier',supplierAuthRouter)
 
-// debt route
-app.use('/api/debts',debtRouter)
 
 // sold items
 

@@ -1,7 +1,6 @@
 import React, { useContext, useState } from "react";
 import { AdminProductsContext } from "../Components/Context/AdminProductsProvider";
 import { SoldItemsContext } from "../Components/Context/SoldItemsProvider";
-import { DebtsContext } from "../Components/Context/DebtsProvider";
 import {
   Modal, Box, Typography, TextField, Button,
   ToggleButton, ToggleButtonGroup,
@@ -10,7 +9,7 @@ import {
   DialogContent, DialogContentText, DialogActions,
   Fade, Grow, IconButton, InputAdornment, Tooltip
 } from "@mui/material";
-import { Package, TrendingUp, ShoppingCart, Users, Store, MapPin, X, AlertCircle } from "lucide-react";
+import { Package, ShoppingCart, Users, Store, MapPin, X, AlertCircle } from "lucide-react";
 
 const modalStyle = {
   position: "absolute",
@@ -30,7 +29,6 @@ const modalStyle = {
 const Home = () => {
   const { products, sellProduct } = useContext(AdminProductsContext);
   const { fetchSoldItems } = useContext(SoldItemsContext);
-  const { fetchDebts } = useContext(DebtsContext);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [saleType, setSaleType] = useState("full");
@@ -114,7 +112,6 @@ const Home = () => {
             type: "partial", quantity: qty, paidAmount: paid, customerName, shopName, city,
           });
           if (res.success) {
-            await fetchDebts();
             await fetchSoldItems();
             showSnackbar("Partial sale recorded!", "success");
             closeModal();
@@ -140,39 +137,21 @@ const Home = () => {
             >
               Products Overview
             </Typography>
-            
+
             {/* Stats Bar */}
             {products.length > 0 && (
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Chip 
                   label={`${products.length} Products`} 
-                  sx={{ 
-                    bgcolor: 'rgba(59, 130, 246, 0.1)', 
-                    color: 'rgb(37, 99, 235)', 
-                    fontWeight: 600,
-                    px: 1,
-                    fontSize: '0.875rem'
-                  }} 
+                  sx={{ bgcolor: 'rgba(59, 130, 246, 0.1)', color: 'rgb(37, 99, 235)', fontWeight: 600, px: 1, fontSize: '0.875rem' }} 
                 />
                 <Chip 
                   label={`${products.filter(p => p.inventory > 0).length} In Stock`} 
-                  sx={{ 
-                    bgcolor: 'rgba(34, 197, 94, 0.1)', 
-                    color: 'rgb(22, 163, 74)', 
-                    fontWeight: 600,
-                    px: 1,
-                    fontSize: '0.875rem'
-                  }} 
+                  sx={{ bgcolor: 'rgba(34, 197, 94, 0.1)', color: 'rgb(22, 163, 74)', fontWeight: 600, px: 1, fontSize: '0.875rem' }} 
                 />
                 <Chip 
                   label={`${products.filter(p => p.inventory === 0).length} Out of Stock`} 
-                  sx={{ 
-                    bgcolor: 'rgba(239, 68, 68, 0.1)', 
-                    color: 'rgb(220, 38, 38)', 
-                    fontWeight: 600,
-                    px: 1,
-                    fontSize: '0.875rem'
-                  }} 
+                  sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(220, 38, 38)', fontWeight: 600, px: 1, fontSize: '0.875rem' }} 
                 />
               </div>
             )}
@@ -198,78 +177,29 @@ const Home = () => {
                 <Grow in timeout={400 + index * 100} key={product._id}>
                   <Card 
                     className="group relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1" 
-                    sx={{ 
-                      borderRadius: 4,
-                      border: '1px solid',
-                      borderColor: 'rgba(0,0,0,0.06)',
-                      '&:hover': {
-                        borderColor: 'rgba(59, 130, 246, 0.3)',
-                      }
-                    }}
+                    sx={{ borderRadius: 4, border: '1px solid', borderColor: 'rgba(0,0,0,0.06)', '&:hover': { borderColor: 'rgba(59, 130, 246, 0.3)' } }}
                   >
-                    {/* Gradient Overlay on Hover */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-indigo-500/0 group-hover:from-blue-500/5 group-hover:to-indigo-500/5 transition-all duration-300 pointer-events-none" />
-                    
                     <CardContent className="relative p-6">
-                      {/* Header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1 mr-3">
-                          <Typography 
-                            variant="h6" 
-                            className="font-bold text-gray-900 mb-2 line-clamp-1"
-                            sx={{ fontSize: '1.125rem' }}
-                          >
+                          <Typography variant="h6" className="font-bold text-gray-900 mb-2 line-clamp-1" sx={{ fontSize: '1.125rem' }}>
                             {product.name}
                           </Typography>
-                          {/* <Chip 
-                            label={product.category} 
-                            size="small" 
-                            sx={{ 
-                              bgcolor: 'rgba(59, 130, 246, 0.08)', 
-                              color: 'rgb(37, 99, 235)', 
-                              fontWeight: 600, 
-                              fontSize: '0.7rem',
-                              height: '24px'
-                            }} 
-                          /> */}
                         </div>
                         <Tooltip title={`${product.inventory} units available`} arrow>
-                          <Chip 
-                            label={stockStatus.label} 
-                            color={stockStatus.color} 
-                            size="small" 
-                            sx={{ 
-                              fontWeight: 600,
-                              fontSize: '0.7rem',
-                              height: '24px',
-                              '& .MuiChip-label': {
-                                px: 1.5
-                              }
-                            }} 
-                          />
+                          <Chip label={stockStatus.label} color={stockStatus.color} size="small" sx={{ fontWeight: 600, fontSize: '0.7rem', height: '24px', '& .MuiChip-label': { px: 1.5 } }} />
                         </Tooltip>
                       </div>
-
-                      {/* Description */}
-                      <Typography 
-                        variant="body2" 
-                        className="text-gray-600 mb-4 line-clamp-2"
-                        sx={{ minHeight: '40px', lineHeight: 1.5 }}
-                      >
+                      <Typography variant="body2" className="text-gray-600 mb-4 line-clamp-2" sx={{ minHeight: '40px', lineHeight: 1.5 }}>
                         {product.description}
                       </Typography>
-
-                      {/* Inventory Badge */}
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg mb-4">
                         <Package className="w-4 h-4 text-gray-500" />
                         <Typography variant="caption" className="text-gray-700 font-semibold">
                           {product.inventory} units available
                         </Typography>
                       </div>
-
                       <Divider sx={{ my: 2 }} />
-
-                      {/* Pricing Section */}
                       <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
                         <div className="flex items-center justify-between mb-3 pb-3 border-b border-blue-100">
                           <div className="flex items-center gap-2">
@@ -295,8 +225,6 @@ const Home = () => {
                         </div>
                       </div>
                     </CardContent>
-
-                    {/* Action Button */}
                     <CardActions className="p-4 pt-0">
                       {product.inventory > 0 ? (
                         <Button 
@@ -321,18 +249,7 @@ const Home = () => {
                           Sell Product
                         </Button>
                       ) : (
-                        <Button 
-                          variant="outlined" 
-                          fullWidth 
-                          disabled
-                          sx={{
-                            borderRadius: 2,
-                            py: 1.5,
-                            fontWeight: 600,
-                            textTransform: 'none',
-                            fontSize: '0.95rem'
-                          }}
-                        >
+                        <Button variant="outlined" fullWidth disabled sx={{ borderRadius: 2, py: 1.5, fontWeight: 600, textTransform: 'none', fontSize: '0.95rem' }}>
                           Out of Stock
                         </Button>
                       )}
@@ -359,7 +276,6 @@ const Home = () => {
       >
         <Fade in={isModalOpen}>
           <Box sx={modalStyle}>
-            {/* Modal Header */}
             <div className="flex items-start justify-between mb-6">
               <div>
                 <Typography variant="h5" className="font-bold text-gray-900 mb-1">
@@ -374,7 +290,6 @@ const Home = () => {
               </IconButton>
             </div>
 
-            {/* Payment Type Toggle */}
             <ToggleButtonGroup
               value={saleType}
               exclusive
@@ -407,7 +322,6 @@ const Home = () => {
               </ToggleButton>
             </ToggleButtonGroup>
 
-            {/* Form Fields */}
             <TextField
               label="Quantity"
               type="number"
@@ -431,9 +345,7 @@ const Home = () => {
               sx={{ mb: 2.5 }}
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              SelectProps={{
-                native: true,
-              }}
+              SelectProps={{ native: true }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -498,7 +410,6 @@ const Home = () => {
               </Fade>
             )}
 
-            {/* Summary Section */}
             <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
               <div className="flex items-center justify-between mb-2">
                 <Typography variant="body2" className="text-gray-700 font-medium">
@@ -533,7 +444,6 @@ const Home = () => {
               )}
             </div>
 
-            {/* Action Button */}
             <Button 
               variant="contained" 
               fullWidth 
@@ -559,38 +469,13 @@ const Home = () => {
         </Fade>
       </Modal>
 
-      {/* Snackbar */}
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={4000} 
-        onClose={closeSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-          severity={snackbar.severity} 
-          onClose={closeSnackbar}
-          sx={{ 
-            borderRadius: 2,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-            fontWeight: 500
-          }}
-        >
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={closeSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert severity={snackbar.severity} onClose={closeSnackbar} sx={{ borderRadius: 2, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', fontWeight: 500 }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
 
-      {/* Confirm Dialog */}
-      <Dialog 
-        open={confirmDialog.open} 
-        onClose={closeConfirmDialog}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            minWidth: '400px',
-            maxWidth: '90%'
-          }
-        }}
-      >
+      <Dialog open={confirmDialog.open} onClose={closeConfirmDialog} PaperProps={{ sx: { borderRadius: 3, minWidth: '400px', maxWidth: '90%' } }}>
         <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>
           {confirmDialog.title}
         </DialogTitle>
@@ -600,31 +485,14 @@ const Home = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 2.5, pt: 1 }}>
-          <Button 
-            onClick={closeConfirmDialog}
-            sx={{ 
-              textTransform: 'none', 
-              fontWeight: 600,
-              color: 'text.secondary'
-            }}
-          >
+          <Button onClick={closeConfirmDialog} sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}>
             Cancel
           </Button>
-          <Button 
-            onClick={() => {
-              confirmDialog.onConfirm();
-              closeConfirmDialog();
-            }} 
-            variant="contained"
-            sx={{
-              textTransform: 'none',
-              fontWeight: 600,
-              background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-              }
-            }}
-          >
+          <Button onClick={() => { confirmDialog.onConfirm(); closeConfirmDialog(); }} variant="contained" sx={{
+            textTransform: 'none', fontWeight: 600,
+            background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+            '&:hover': { background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)' }
+          }}>
             Confirm
           </Button>
         </DialogActions>
