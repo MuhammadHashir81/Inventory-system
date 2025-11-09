@@ -9,6 +9,91 @@ const TotalSales = () => {
   const totalPaidAmount = soldItems.reduce((sum, item) => sum + (item.paidAmount || 0), 0);
   const totalRemaining = soldItems.reduce((sum, item) => sum + (item.remainingAmount || 0), 0);
 
+  const downloadInvoicePDF = (item) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 1000;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Header
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(0, 0, canvas.width, 120);
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px Arial';
+    ctx.fillText('INVOICE', 50, 70);
+    
+    ctx.font = '16px Arial';
+    ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 600, 70);
+
+    // Invoice Details
+    ctx.fillStyle = '#1f2937';
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText('CUSTOMER INFORMATION', 50, 170);
+    
+    ctx.font = '16px Arial';
+    ctx.fillText(`Customer: ${item.customerName || 'Unknown'}`, 50, 210);
+    ctx.fillText(`Shop: ${item.shopName || 'N/A'}`, 50, 240);
+    ctx.fillText(`City: ${item.city}`, 50, 270);
+
+    // Product Details
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText('PRODUCT DETAILS', 50, 330);
+    
+    ctx.font = '16px Arial';
+    ctx.fillText(`Product: ${item.productName}`, 50, 370);
+    ctx.fillText(`Quantity: ${item.quantity}`, 50, 400);
+    ctx.fillText(`Price per Unit: $${item.pricePerUnit.toFixed(2)}`, 50, 430);
+
+    // Line separator
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(50, 460);
+    ctx.lineTo(750, 460);
+    ctx.stroke();
+
+    // Payment Information
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText('PAYMENT INFORMATION', 50, 510);
+    
+    ctx.font = '16px Arial';
+    ctx.fillText(`Total Amount: $${item.totalAmount.toFixed(2)}`, 50, 550);
+    ctx.fillStyle = '#059669';
+    ctx.fillText(`Paid Amount: $${item.paidAmount.toFixed(2)}`, 50, 580);
+    ctx.fillStyle = '#dc2626';
+    ctx.fillText(`Remaining: $${item.remainingAmount.toFixed(2)}`, 50, 610);
+
+    // Status
+    ctx.fillStyle = item.isDebtCleared ? '#059669' : '#f59e0b';
+    ctx.fillRect(50, 650, 150, 40);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 18px Arial';
+    ctx.fillText(item.isDebtCleared ? 'PAID' : 'PENDING', 70, 677);
+
+    // Footer
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '14px Arial';
+    ctx.fillText('Thank you for your business!', 50, 900);
+    ctx.fillText(`Invoice ID: ${item._id}`, 50, 930);
+
+    // Convert to PDF and download
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `invoice_${item.customerName}_${item._id}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+  };
+
   if (soldItems.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex items-center justify-center">
@@ -68,12 +153,25 @@ const TotalSales = () => {
           {soldItems.map((item) => (
             <div key={item._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
-                <h3 className="text-xl font-bold text-gray-800 truncate">{item.productName}</h3>
-                <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
-                  item.isDebtCleared ? "bg-green-500 text-white" : "bg-amber-500 text-white"
-                }`}>
-                  {item.isDebtCleared ? "✓ Paid" : "⏳ Pending"}
-                </span>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800 truncate">{item.productName}</h3>
+                    <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                      item.isDebtCleared ? "bg-green-500 text-white" : "bg-amber-500 text-white"
+                    }`}>
+                      {item.isDebtCleared ? "✓ Paid" : "⏳ Pending"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => downloadInvoicePDF(item)}
+                    className="bg-white hover:bg-gray-50 text-gray-700 p-2 rounded-lg shadow-sm transition-all border border-gray-200"
+                    title="Download Invoice"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               
               <div className="p-6 space-y-3">
