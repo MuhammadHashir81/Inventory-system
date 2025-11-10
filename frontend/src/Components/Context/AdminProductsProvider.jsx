@@ -31,7 +31,7 @@ const AdminProductsProvider = ({ children }) => {
       }
       return res.data;
     } catch (error) {
-      console.error("Sell product error:", error);
+      console.error("Sell product error:",   error);
       return { success: false, message: "Server error" };
     }
   };
@@ -45,7 +45,7 @@ const AdminProductsProvider = ({ children }) => {
         
       }
       return { success: true, message: res.data.message || "Product added successfully!" };
-    } catch (error) {
+   } catch (error) {
       console.error("Add product error:", error);
       return { success: false, message: "Server error" };
     }
