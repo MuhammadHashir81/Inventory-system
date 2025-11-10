@@ -11,8 +11,8 @@ const SoldItemsProvider = ({ children }) => {
   const fetchSoldItems = async () => {
   try {
     const res = await axios.get(`${apiUrl}/api/sold-items/get`);
-    console.log(res.data);
-    if (res.data.success) setSoldItems(res.data.soldItems); // <-- changed from items to soldItems
+    console.log("sold items are",res.data);
+    if (res.data.soldItems) setSoldItems(res.data.soldItems); // <-- changed from items to soldItems
   } catch (error) {
     console.error("Fetch sold items error:", error);
   }
@@ -22,7 +22,7 @@ const SoldItemsProvider = ({ children }) => {
     try {
       const res = await axios.post(`${apiUrl}/api/sold-items/add`, item);
 
-      if (res.data.success) setSoldItems([res.data.item, ...soldItems]);
+      if (res.data.soldItems) setSoldItems([res.data.item, ...soldItems]);
       return res.data;
     } catch (error) {
       console.error("Add sold item error:", error);

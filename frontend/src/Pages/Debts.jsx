@@ -7,6 +7,7 @@ const Debts = () => {
   const { debts, loading, makePayment } = useContext(DebtsContext);
   const [paymentInput, setPaymentInput] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedDebt, setExpandedDebt] = useState(null);
 
   // Filter debts based on search query
   const filteredDebts = useMemo(() => {
@@ -15,9 +16,12 @@ const Debts = () => {
     const query = searchQuery.toLowerCase().trim();
     return debts.filter(debt => {
       const customerName = (debt.customerName || "").toLowerCase();
-      const productName = (debt.productName || "").toLowerCase();
+      const shopName = (debt.shopName || "").toLowerCase();
+      const hasMatchingProduct = debt.items?.some(item => 
+        (item.productName || "").toLowerCase().includes(query)
+      );
       
-      return customerName.includes(query) || productName.includes(query);
+      return customerName.includes(query) || shopName.includes(query) || hasMatchingProduct;
     });
   }, [debts, searchQuery]);
 
@@ -47,7 +51,11 @@ const Debts = () => {
 
   const handlePayment = async (id) => {
     const amount = Number(paymentInput[id]);
-    if (!amount || amount <= 0) return;
+    if (!amount || amount <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+    
     const res = await makePayment(id, amount);
     if (res.success) {
       toast.success("Payment updated successfully!");
@@ -57,9 +65,12 @@ const Debts = () => {
     }
   };
 
+  const toggleExpand = (debtId) => {
+    setExpandedDebt(expandedDebt === debtId ? null : debtId);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-
       <div className="container mx-auto max-w-7xl">
         <Toaster/>
         <h1 className="text-4xl font-bold mb-10 text-center text-gray-800">Customer Debts Overview</h1>
@@ -77,7 +88,7 @@ const Debts = () => {
             </svg>
             <input
               type="text"
-              placeholder="Search by customer name or product..."
+              placeholder="Search by customer, shop, or product name..."
               className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -124,29 +135,75 @@ const Debts = () => {
                 className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100"
               >
                 <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 border-b border-gray-100">
-                  <h2 className="text-xl font-bold text-gray-800">Customer Name: {debt.customerName || "Unknown"}</h2>
-                  <h3 className="text-sm text-gray-600 mt-1">{debt.productName || "Unknown Product"}</h3>
-                  <span
-                    className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-semibold ${
-                      debt.isCleared ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
-                    }`}
-                  >
-                    {debt.isCleared ? "✓ Paid" : "⏳ Pending"}
-                  </span>
+                  <h2 className="text-xl font-bold text-gray-800">{debt.customerName || "Unknown"}</h2>
+                  {debt.shopName && (
+                    <p className="text-sm text-gray-600 mt-1">Shop: {debt.shopName}</p>
+                  )}
+                  <div className="flex items-center justify-between mt-3">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        debt.isCleared ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
+                      }`}
+                    >
+                      {debt.isCleared ? "✓ Paid" : "⏳ Pending"}
+                    </span>
+                    <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
+                      {debt.city === "johrabad" ? "Johrabad" : "Other City"}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-6 space-y-3">
+                  {/* Products List */}
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <div 
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => toggleExpand(debt._id)}
+                    >
+                      <h3 className="text-sm font-semibold text-gray-700">
+                        Products ({debt.items?.length || 0})
+                      </h3>
+                      <svg 
+                        className={`w-5 h-5 text-gray-500 transition-transform ${
+                          expandedDebt === debt._id ? "rotate-180" : ""
+                        }`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                    
+                    {expandedDebt === debt._id && (
+                      <div className="mt-3 space-y-2">
+                        {debt.items?.map((item, index) => (
+                          <div key={index} className="bg-white rounded p-2 text-xs">
+                            <div className="flex justify-between items-start">
+                              <span className="font-medium text-gray-800">{item.productName}</span>
+                              <span className="text-gray-600">×{item.quantity}</span>
+                            </div>
+                            <div className="flex justify-between mt-1 text-gray-500">
+                              <span>Rs. {item.pricePerUnit.toFixed(2)} each</span>
+                              <span className="font-semibold">Rs. {item.itemTotal.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">Total Amount</span>
-                    <span className="font-bold text-gray-800">{debt.totalAmount.toFixed(2)}</span>
+                    <span className="font-bold text-gray-800">Rs. {debt.totalAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">Paid</span>
-                    <span className="font-semibold text-green-600">{debt.paidAmount.toFixed(2)}</span>
+                    <span className="font-semibold text-green-600">Rs. {debt.paidAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center border-t border-gray-100 pt-2">
                     <span className="text-sm text-gray-500">Remaining</span>
-                    <span className="font-semibold text-red-600">{debt.remainingAmount.toFixed(2)}</span>
+                    <span className="font-semibold text-red-600">Rs. {debt.remainingAmount.toFixed(2)}</span>
                   </div>
 
                   {!debt.isCleared && (

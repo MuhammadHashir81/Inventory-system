@@ -43,6 +43,7 @@ const AddProduct = () => {
 
     if (result.success) {
       toast.success(result.message || "Product added successfully!");
+
       setProduct({
         name: "",
         priceJohrabad: "",

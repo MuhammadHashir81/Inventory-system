@@ -82,6 +82,7 @@ const ManageProducts = () => {
   };
 
   const handleDelete = async () => {
+    console.log("hahir")
     await deleteProduct(selectedProduct._id);
     closeDeleteModal();
   };

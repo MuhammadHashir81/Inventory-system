@@ -1,83 +1,99 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 
-const apiUrl = import.meta.env.VITE_BACKEND_URL; // Your backend URL
 export const AdminProductsContext = createContext();
 
-const AdminProductsProvider = ({ children }) => {
+ const AdminProductsProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+const apiUrl = import.meta.env.VITE_BACKEND_URL
 
   // Fetch all products
   const fetchProducts = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(`${apiUrl}/api/admin/products/get`);
-      if (res.data.products) setProducts(res.data.products);
+      console.log(res.data.products)
+      if (res.data.products) {
+        setProducts(res.data.products);
+      }
     } catch (error) {
-      console.error("Fetch products error:", error);
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Sell a product
-  const sellProduct = async (productId, data) => {
+  // Sell multiple products in one order
+  const sellProducts = async (orderData) => {
     try {
-      const res = await axios.post(`${apiUrl}/api/sold-items/sell`, { productId, ...data });
+      const res = await axios.post(`${apiUrl}/api/sold-items/sell`, orderData);
       if (res.data.success) {
-
-        // setProducts(products.map(p => 
-        //   p._id === productId ? res.data.updatedProduct : p
-        // ));
-
-        fetchProducts()
+        // Refresh products after sale
+        await fetchProducts();
       }
       return res.data;
     } catch (error) {
-      console.error("Sell product error:",   error);
-      return { success: false, message: "Server error" };
+      console.error("Error selling products:", error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || "Error processing sale" 
+      };
     }
   };
 
-  // Add a new product
-  const addProduct = async (data) => {
+  // Add product
+  const addProduct = async (productData) => {
     try {
-      const res = await axios.post(`${apiUrl}/api/admin/products/add`, data);
-      if (res.data.product) {
-        setProducts(prev => [...prev, res.data.product]);
-        
+      const res = await axios.post(`${apiUrl}/api/admin/products/add`, productData);
+      if (res.data.success) {
+        await fetchProducts();
+       
       }
-      return { success: true, message: res.data.message || "Product added successfully!" };
-   } catch (error) {
-      console.error("Add product error:", error);
-      return { success: false, message: "Server error" };
+      return {
+        success: true
+      }
+    } catch (error) {
+      console.error("Error adding product:", error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || "Error adding product" 
+      };
     }
   };
 
-  // Update an existing product
-  const updateProduct = async (productId, data) => {
+  // Update product
+  const updateProduct = async (id, productData) => {
     try {
-      const res = await axios.put(`${apiUrl}/api/admin/products/update/${productId}`, data);
-      if (res.data.product) {
-        setProducts(products.map(p => 
-          p._id === productId ? res.data.product : p
-        ));
+      const res = await axios.put(`${apiUrl}/api/admin/products/update/${id}`, productData);
+      if (res.data.message) {
+        await fetchProducts();
       }
       return res.data;
     } catch (error) {
-      console.error("Update product error:", error);
-      return { success: false, message: "Server error" };
+      console.error("Error updating product:", error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || "Error updating product" 
+      };
     }
   };
 
-  // Delete a product
-  const deleteProduct = async (productId) => {
+  // Delete product
+  const deleteProduct = async (id) => {
     try {
-      const res = await axios.delete(`${apiUrl}/api/admin/products/delete/${productId}`);
-      if (res.data.message === "Product deleted successfully") {
-        setProducts(products.filter(p => p._id !== productId));
+      const res = await axios.delete(`${apiUrl}/api/admin/products/delete/${id}`);
+      if (res.data.message) {
+        await fetchProducts();
       }
       return res.data;
     } catch (error) {
-      console.error("Delete product error:", error);
-      return { success: false, message: "Server error" };
+      console.error("Error deleting product:", error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || "Error deleting product" 
+      };
     }
   };
 
@@ -89,11 +105,12 @@ const AdminProductsProvider = ({ children }) => {
     <AdminProductsContext.Provider
       value={{
         products,
+        loading,
         fetchProducts,
-        sellProduct,
+        sellProducts,
         addProduct,
         updateProduct,
-        deleteProduct
+        deleteProduct,
       }}
     >
       {children}
@@ -101,4 +118,4 @@ const AdminProductsProvider = ({ children }) => {
   );
 };
 
-export default AdminProductsProvider;
+export default AdminProductsProvider

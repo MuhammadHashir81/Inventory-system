@@ -16,7 +16,8 @@ const DebtsProvider = ({ children }) => {
     setLoading(true);
     try {
       const res = await axios.get(`${apiUrl}/api/debts/get`);
-      if (res.data.success) setDebts(res.data.debts);
+      console.log(res.data)
+      if (res.data.debts) setDebts(res.data.debts);
     } catch (error) {
       console.error("Error fetching debts:", error);
     }
