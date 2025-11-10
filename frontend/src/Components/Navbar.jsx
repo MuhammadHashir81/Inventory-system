@@ -23,7 +23,7 @@ const Navbar = () => {
           className="text-2xl font-semibold cursor-pointer text-blue-700 tracking-wide"
           onClick={() => navigate("/")}
         >
-          <span className="text-blue-500">Pharmacy</span>
+          <span className="text-blue-500">CityPharmacy</span>
         </h1>
 
         {/* Desktop Menu */}

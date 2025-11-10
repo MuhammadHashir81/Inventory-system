@@ -25,3 +25,5 @@ createRoot(document.getElementById('root')).render(
     </AdminProductsProvider>
   </StrictMode>,
 )
+
+          {/* mongodb password: 4iiOrna7DIbMVb2F */}
