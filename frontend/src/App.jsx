@@ -8,14 +8,18 @@ import ManageProducts from "./Pages/Admin/ManageProducts";
 import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
 import Debts from "./Pages/Debts";
 import SupplierProtectedRoute from "./ProtectedRoute/SupplierProtectedRoute";
+import ChooseLogin from "./Pages/ChooseLogin";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* entry route */}
+        <Route path='/' element={<ChooseLogin/>}/>
         {/* Supplier Protected Layout */}
         <Route
-          path="/"
+          path="/home"
           element={
             <SupplierProtectedRoute>
               <Layout />
