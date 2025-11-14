@@ -1,4 +1,4 @@
-  import toast from "react-hot-toast";
+import toast from "react-hot-toast";
   import { Toaster } from "react-hot-toast";
   import React, { useContext, useState, useMemo } from "react";
   import { AdminProductsContext } from "../Components/Context/AdminProductsProvider";
@@ -32,7 +32,6 @@
 
   const Home = () => {
     const { products, sellProducts } = useContext(AdminProductsContext);
-    console.log(products)
     const { fetchSoldItems } = useContext(SoldItemsContext);
     const { fetchDebts } = useContext(DebtsContext);
 
@@ -45,6 +44,7 @@
     const [city, setCity] = useState("johrabad");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [batchNo, setBatchNo] = useState("");
 
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", message: "", onConfirm: null });
@@ -73,6 +73,7 @@
       setCustomerName("");
       setShopName("");
       setCity("johrabad");
+      setBatchNo(product.batchNo || "");
       setIsModalOpen(true);
     };
 
@@ -80,7 +81,6 @@
       setIsModalOpen(false);
       setTimeout(() => {
         setCartItems([]);
-        setSelectedProduct(null);
       }, 300);
     };
 
@@ -196,6 +196,7 @@
               customerName,
               shopName,
               city,
+              batchNo,
             };
             
             const res = await sellProducts(orderData);
@@ -238,6 +239,7 @@
               customerName,
               shopName,
               city,
+              batchNo,
             };
             
             const res = await sellProducts(orderData);
@@ -414,7 +416,7 @@
                               Rs. {(product.price?.johrabad ?? 0).toLocaleString()}
                             </Typography>
                           </div>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-3 pb-3 border-b border-blue-100">
                             <div className="flex items-center gap-2">
                               <MapPin className="w-3.5 h-3.5 text-indigo-600" />
                               <Typography variant="caption" className="text-gray-700 font-semibold">
@@ -423,6 +425,16 @@
                             </div>
                             <Typography variant="h6" className="font-bold text-indigo-600" sx={{ fontSize: '1rem' }}>
                               Rs. {(product.price?.other ?? 0).toLocaleString()}
+                            </Typography>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Typography variant="caption" className="text-gray-700 font-semibold">
+                                Batch No
+                              </Typography>
+                            </div>
+                            <Typography variant="h6" className="font-bold text-indigo-600" sx={{ fontSize: '0.95rem' }}>
+                              {product.batchNo || 'N/A'}
                             </Typography>
                           </div>
                         </div>
@@ -533,9 +545,14 @@
                       </IconButton>
                     </div>
                     {item.product && (
-                      <Typography variant="caption" className="text-gray-600 mt-2 block">
-                        Price: Rs. {(city === "johrabad" ? item.product.price?.johrabad : item.product.price?.other).toLocaleString()} × {item.quantity} = Rs. {((city === "johrabad" ? item.product.price?.johrabad : item.product.price?.other) * item.quantity).toLocaleString()}
-                      </Typography>
+                      <div>
+                        <Typography variant="caption" className="text-gray-600 mt-2 block">
+                          Price: Rs. {(city === "johrabad" ? item.product.price?.johrabad : item.product.price?.other).toLocaleString()} × {item.quantity} = Rs. {((city === "johrabad" ? item.product.price?.johrabad : item.product.price?.other) * item.quantity).toLocaleString()}
+                        </Typography>
+                        <Typography variant="caption" className="text-gray-600 block mt-1">
+                          Batch No: {item.product.batchNo || 'N/A'}
+                        </Typography>
+                      </div>
                     )}
                   </Paper>
                 ))}
@@ -630,6 +647,21 @@
                   startAdornment: (
                     <InputAdornment position="start">
                       <Store className="w-4 h-4 text-gray-500" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              
+              <TextField
+                label="Batch No"
+                fullWidth
+                sx={{ mb: 2.5 }}
+                value={batchNo}
+                onChange={(e) => setBatchNo(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Package className="w-4 h-4 text-gray-500" />
                     </InputAdornment>
                   ),
                 }}

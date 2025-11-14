@@ -9,6 +9,7 @@ const Debts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedDebt, setExpandedDebt] = useState(null);
 
+
   // Filter debts based on search query
   const filteredDebts = useMemo(() => {
     if (!searchQuery.trim()) return debts;
@@ -192,7 +193,6 @@ const Debts = () => {
                       </div>
                     )}
                   </div>
-
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">Total Amount</span>
                     <span className="font-bold text-gray-800">Rs. {debt.totalAmount.toFixed(2)}</span>
@@ -201,9 +201,15 @@ const Debts = () => {
                     <span className="text-sm text-gray-500">Paid</span>
                     <span className="font-semibold text-green-600">Rs. {debt.paidAmount.toFixed(2)}</span>
                   </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500">batch number</span>
+                    <span className="font-semibold text-green-600"> {debt.batchNo}</span>
+                  </div>
                   <div className="flex justify-between items-center border-t border-gray-100 pt-2">
                     <span className="text-sm text-gray-500">Remaining</span>
                     <span className="font-semibold text-red-600">Rs. {debt.remainingAmount.toFixed(2)}</span>
+                    
+                    
                   </div>
 
                   {!debt.isCleared && (

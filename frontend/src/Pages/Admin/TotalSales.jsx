@@ -3,6 +3,7 @@ import { SoldItemsContext } from "../../Components/Context/SoldItemsProvider";
 
 const TotalSales = () => {
   const { soldItems, fetchSoldItems } = useContext(SoldItemsContext);
+  console.log(soldItems)
   const [expandedSale, setExpandedSale] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("all");
 
@@ -102,7 +103,7 @@ const TotalSales = () => {
     
     ctx.font = '16px Arial';
     ctx.fillText('Your Trusted Healthcare Partner', 140, 95);
-    ctx.fillText('Contact: +92-XXX-XXXXXXX | citypharmacy@example.com', 140, 118);
+    ctx.fillText('Contact: +92 300 8706962 | citypharmacy@example.com', 140, 118);
     
     // Invoice Title
     ctx.font = 'bold 24px Arial';
@@ -111,7 +112,8 @@ const TotalSales = () => {
     ctx.font = '14px Arial';
     const invoiceDate = new Date(item.createdAt || item.date || Date.now());
     ctx.fillText(`Date: ${invoiceDate.toLocaleDateString()}`, 615, 90);
-    ctx.fillText(`Invoice #: ${item._id.slice(-8).toUpperCase()}`, 565, 115);
+    ctx.fillText(`Badge No: ${item.batchNo}`, 565, 105);
+    ctx.fillText(`Invoice #: ${item._id.slice(-8).toUpperCase()}`, 565, 120);
 
     // Decorative line
     ctx.strokeStyle = '#3b82f6';
@@ -445,6 +447,7 @@ const TotalSales = () => {
                           <div className="flex justify-between items-start">
                             <span className="font-medium text-gray-800">{product.productName}</span>
                             <span className="text-gray-600">×{product.quantity}</span>
+                            
                           </div>
                           <div className="flex justify-between mt-1 text-gray-500">
                             <span>Rs. {product.pricePerUnit.toFixed(2)} each</span>
@@ -470,7 +473,9 @@ const TotalSales = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-red-700">Remaining</span>
                     <span className="font-bold text-red-600">Rs. {item.remainingAmount.toFixed(2)}</span>
+                    
                   </div>
+                            <span className="font-medium text-gray-800">batch number: {item.batchNo}</span>
                 </div>
               </div>
             </div>

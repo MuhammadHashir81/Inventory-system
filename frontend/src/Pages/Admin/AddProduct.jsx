@@ -13,11 +13,17 @@ const AddProduct = () => {
     category: "",
     description: "",
     inventory: "",
+    batchNo:""
+
+
   });
+
 
   const handleChange = (e) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
   };
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +34,8 @@ const AddProduct = () => {
       !product.description ||
       !product.priceJohrabad ||
       !product.priceOther ||
-      !product.inventory
+      !product.inventory ||
+      !product.batchNo
     ) {
       toast.error("All fields are required");
       return;
@@ -134,6 +141,19 @@ const AddProduct = () => {
               name="category"
               placeholder="Enter category"
               value={product.category}
+              onChange={handleChange}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+
+          <div className="flex flex-col sm:col-span-2">
+            <label className="text-gray-700 font-medium mb-1 sm:mb-2">Batch no</label>
+            <input
+              type="text"
+              name="batchNo"
+              placeholder="Enter batch no"
+              value={product.batchNo}
               onChange={handleChange}
               className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

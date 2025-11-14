@@ -9,6 +9,7 @@ const productSchema = new mongoose.Schema({
     other: { type: Number, required: true },
   },
   inventory: { type: Number, required: true }, // total inventory (initial stock)
+  batchNo: { type: String, required: true },
   sold: { type: Number, default: 0 }, // number of items sold
 });
 

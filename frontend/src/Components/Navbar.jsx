@@ -37,7 +37,7 @@ const Navbar = () => {
 
           <li>
             <button
-              onClick={() => navigate("/debts")}
+              onClick={() => navigate("/home/debts")}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-all duration-200 cursor-pointer"
             >
               Pending Payments

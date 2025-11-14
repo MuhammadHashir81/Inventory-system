@@ -22,6 +22,7 @@ const ManageProducts = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  console.log("products", products);
 
   useEffect(() => {
     fetchProducts();
@@ -33,11 +34,13 @@ const ManageProducts = () => {
 
   // --- Modals ---
   const openEditModal = (product) => {
+    console.log(product.batchNo)
     setSelectedProduct({
       ...product,
       priceJohrabad: product.price?.johrabad || "",
       priceOther: product.price?.other || "",
       sold: product.sold || 0,
+      batchNo: product.batchNo || 0,
     });
     setIsEditModalOpen(true);
   };
@@ -76,7 +79,9 @@ const ManageProducts = () => {
       priceOther: parseFloat(selectedProduct.priceOther),
       inventory: parseInt(selectedProduct.inventory),
       sold: parseInt(selectedProduct.sold),
+      batchNo: selectedProduct.batchNo,
     });
+    console.log("batchNo",selectedProduct.batchNo)
 
     closeEditModal();
   };
@@ -116,6 +121,7 @@ const ManageProducts = () => {
               <th className="px-4 sm:px-6 py-2">Price (Other Cities)</th>
               <th className="px-4 sm:px-6 py-2">Stock</th>
               <th className="px-4 sm:px-6 py-2">Sold</th>
+              <th className="px-4 sm:px-6 py-2">Bath no</th>
               <th className="px-4 sm:px-6 py-2 text-center rounded-tr-lg">Actions</th>
             </tr>
           </thead>
@@ -138,6 +144,7 @@ const ManageProducts = () => {
                 </td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.inventory}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.sold ?? 0}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.batchNo ?? 0}</td>
                 <td className="px-2 sm:px-6 py-2 text-center flex justify-center gap-2 sm:gap-3">
                   <button
                     className="text-blue-600 hover:text-blue-800 transition-all"
@@ -254,6 +261,13 @@ const ManageProducts = () => {
               name="sold"
               type="number"
               value={selectedProduct?.sold || 0}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Batch no"
+              name="batchNo"
+              value={selectedProduct?.batchNo || 0}
               onChange={handleChange}
               fullWidth
             />

@@ -12,9 +12,11 @@ export const sellProducts = async (req, res) => {
       paidAmount,
       customerName,
       shopName,
-      city
+      city,
+      batchNo
     } = req.body;
     
+    console.log(req.body)
     if (!items || items.length === 0 || !type || !customerName) {
       console.log(items,customerName,type)
       return res.status(400).json({ 
@@ -78,6 +80,7 @@ export const sellProducts = async (req, res) => {
       type,
       items: orderItems,
       totalAmount,
+      batchNo,
       paidAmount: paid,
       remainingAmount,
       isDebtCleared: remainingAmount === 0,
@@ -94,6 +97,7 @@ export const sellProducts = async (req, res) => {
         totalAmount,
         paidAmount: paid,
         remainingAmount,
+        batchNo,
         payments: paid > 0 ? [{ amount: paid }] : [],
         isCleared: false,
       });

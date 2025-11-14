@@ -17,7 +17,7 @@ const soldItemSchema = new mongoose.Schema({
       itemTotal: { type: Number, required: true }, // quantity * pricePerUnit
     }
   ],
-  
+  batchNo: { type: String, required: true },
   totalAmount: { type: Number, required: true }, // Sum of all itemTotal
   paidAmount: { type: Number, default: 0 },
   remainingAmount: { type: Number, default: 0 },
