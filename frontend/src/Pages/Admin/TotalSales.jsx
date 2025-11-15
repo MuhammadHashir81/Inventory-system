@@ -1,12 +1,13 @@
 import { useContext, useState, useMemo, React } from "react";
 import { SoldItemsContext } from "../../Components/Context/SoldItemsProvider";
-import { Calendar, ChevronDown, Clock, DollarSign, Download, Edit, TrendingUp, Search, X } from "lucide-react";
+import { Calendar, ChevronDown, Clock, DollarSign, Download, Edit, TrendingUp, Search, X, Plus, Trash2 } from "lucide-react";
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { Checkbox, FormControlLabel } from '@mui/material';
 
 const TotalSales = () => {
   const { soldItems, fetchSoldItems, deleteSoldItems } = useContext(SoldItemsContext);
@@ -169,12 +170,91 @@ const TotalSales = () => {
   };
 
   const handleItemChange = (index, field, value) => {
+    setInvoiceData(prev => {
+      const updatedItems = prev.items?.map((item, i) => {
+        if (i === index) {
+          const updated = { ...item };
+          if (field === 'quantity' || field === 'pricePerUnit') {
+            updated[field] = parseFloat(value) || 0;
+          } else {
+            updated[field] = value;
+          }
+          updated.itemTotal = (updated.quantity || 0) * (updated.pricePerUnit || 0);
+          return updated;
+        }
+        return item;
+      }) || [];
+      
+      const newTotal = updatedItems.reduce((sum, item) => sum + (item.itemTotal || 0), 0);
+      const newRemaining = Math.max(0, newTotal - (prev.paidAmount || 0));
+      
+      return {
+        ...prev,
+        items: updatedItems,
+        totalAmount: newTotal,
+        remainingAmount: newRemaining
+      };
+    });
+  };
+
+  const addProductToInvoice = () => {
     setInvoiceData(prev => ({
       ...prev,
-      items: prev.items?.map((item, i) => 
-        i === index ? {...item, [field]: field === 'quantity' || field === 'pricePerUnit' ? parseFloat(value) || 0 : value} : item
-      )
+      items: [
+        ...(prev.items || []),
+        {
+          productName: '',
+          batchNo: '',
+          quantity: 1,
+          pricePerUnit: 0,
+          itemTotal: 0
+        }
+      ]
     }));
+  };
+
+  const removeProductFromInvoice = (index) => {
+    setInvoiceData(prev => {
+      const updatedItems = prev.items?.filter((_, i) => i !== index) || [];
+      const newTotal = updatedItems.reduce((sum, item) => sum + (item.itemTotal || 0), 0);
+      const newRemaining = Math.max(0, newTotal - (prev.paidAmount || 0));
+      
+      return {
+        ...prev,
+        items: updatedItems,
+        totalAmount: newTotal,
+        remainingAmount: newRemaining
+      };
+    });
+  };
+
+  const handlePaidAmountChange = (value) => {
+    const paidAmount = parseFloat(value) || 0;
+    const totalAmount = invoiceData.totalAmount || 0;
+    const remaining = Math.max(0, totalAmount - paidAmount);
+    
+    setInvoiceData(prev => ({
+      ...prev,
+      paidAmount: paidAmount,
+      remainingAmount: remaining,
+      isDebtCleared: remaining === 0
+    }));
+  };
+
+  const handleDebtClearedChange = (value) => {
+    if (value) {
+      setInvoiceData(prev => ({
+        ...prev,
+        isDebtCleared: true,
+        paidAmount: prev.totalAmount || 0,
+        remainingAmount: 0
+      }));
+    } else {
+      setInvoiceData(prev => ({
+        ...prev,
+        isDebtCleared: false
+      }));
+    }
   };
 
   const generateInvoiceNumber = () => {
@@ -500,8 +580,17 @@ const TotalSales = () => {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Products</h3>
-              <div className="space-y-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-gray-800">Products</h3>
+                <button
+                  onClick={addProductToInvoice}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition font-medium text-sm"
+                >
+                  <Plus size={16} />
+                  Add Product
+                </button>
+              </div>
+              <div className="space-y-3 max-h-64 overflow-y-auto">
                 {invoiceData.items?.map((product, index) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-2">
@@ -541,11 +630,19 @@ const TotalSales = () => {
                           className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                       </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-600">Total</label>
-                        <div className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-semibold text-blue-600">
-                          Rs. {((product.quantity || 0) * (product.pricePerUnit || 0)).toFixed(2)}
+                      <div className="flex items-end gap-2">
+                        <div className="flex-1">
+                          <label className="text-xs font-medium text-gray-600">Total</label>
+                          <div className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-semibold text-blue-600">
+                            Rs. {((product.quantity || 0) * (product.pricePerUnit || 0)).toFixed(2)}
+                          </div>
                         </div>
+                        <button
+                          onClick={() => removeProductFromInvoice(index)}
+                          className="bg-red-600 hover:bg-red-700 text-white p-2 rounded transition"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -553,32 +650,37 @@ const TotalSales = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
-                <input
-                  type="number"
-                  value={invoiceData.totalAmount || 0}
-                  onChange={(e) => handleInvoiceFieldChange('totalAmount', parseFloat(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+                <div className="px-3 py-2 bg-white border border-gray-300 rounded-lg font-bold text-blue-600">
+                  Rs. {(invoiceData.totalAmount || 0).toFixed(2)}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Paid Amount</label>
                 <input
                   type="number"
                   value={invoiceData.paidAmount || 0}
-                  onChange={(e) => handleInvoiceFieldChange('paidAmount', parseFloat(e.target.value))}
+                  onChange={(e) => handlePaidAmountChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Remaining Amount</label>
-                <input
-                  type="number"
-                  value={invoiceData.remainingAmount || 0}
-                  onChange={(e) => handleInvoiceFieldChange('remainingAmount', parseFloat(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                <div className="px-3 py-2 bg-white border border-gray-300 rounded-lg font-bold text-orange-600">
+                  Rs. {(invoiceData.remainingAmount || 0).toFixed(2)}
+                </div>
+              </div>
+              <div className="flex items-end">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={invoiceData.isDebtCleared || false}
+                      onChange={(e) => handleDebtClearedChange(e.target.checked)}
+                    />
+                  }
+                  label="Mark as Paid"
                 />
               </div>
             </div>
