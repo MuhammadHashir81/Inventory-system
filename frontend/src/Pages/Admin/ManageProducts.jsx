@@ -22,7 +22,6 @@ const ManageProducts = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  console.log("products", products);
 
   useEffect(() => {
     fetchProducts();

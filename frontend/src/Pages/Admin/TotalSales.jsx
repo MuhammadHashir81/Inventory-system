@@ -1,5 +1,6 @@
 import { useContext, useState, useMemo } from "react";
 import { SoldItemsContext } from "../../Components/Context/SoldItemsProvider";
+import { Calendar, ChevronDown, Clock, DollarSign, Download, Edit, TrendingUp } from "lucide-react";
 
 const TotalSales = () => {
   const { soldItems, fetchSoldItems } = useContext(SoldItemsContext);
@@ -346,7 +347,7 @@ const TotalSales = () => {
   // Invoice Edit Modal
   if (editingInvoice) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-auto">
+      <div className="fixed inset-0 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-auto">
         <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8">
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center rounded-t-2xl">
             <h2 className="text-2xl font-bold text-white">Edit Invoice</h2>
@@ -500,81 +501,155 @@ const TotalSales = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-      <div className="container mx-auto max-w-7xl">
-        <h2 className="text-4xl font-bold mb-8 text-gray-800 text-center">Total Sales Overview</h2>
-
-        {/* Month Filter */}
-        <div className="max-w-md mx-auto mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Month</label>
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white shadow-sm"
-          >
-            <option value="all">All Months</option>
-            {sortedMonths.map(month => (
-              <option key={month} value={month}>
-                {formatMonthYear(month)} ({monthlyProfits[month].count} sales)
-              </option>
-            ))}
-          </select>
+    <div className="w-full max-w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Header */}
+        <div className="flex justify-between">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              Sales Overview
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Track and manage all your sales transactions
+            </p>
+          </div>
+          <div>
+          <div className="relative max-w-md">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm sm:text-base appearance-none cursor-pointer"
+            >
+              <option value="all">All Months</option>
+              {sortedMonths.map(month => (
+                <option key={month} value={month}>
+                  {formatMonthYear(month)} ({monthlyProfits[month].count} sales)
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+          </div>
+          </div>
         </div>
 
-        {/* Monthly Profit Summary */}
+      
+   {/* Summary Cards */}
+   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs sm:text-sm font-medium opacity-90 mb-1">Total Sales</p>
+                <p className="text-2xl sm:text-3xl font-bold">
+                  Rs. {totalSalesAmount.toLocaleString()}
+                </p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <TrendingUp size={20} className="sm:w-6 sm:h-6" />
+              </div>
+            </div>
+            <p className="text-xs opacity-75">{filteredSales.length} transactions</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs sm:text-sm font-medium opacity-90 mb-1">Total Collected</p>
+                <p className="text-2xl sm:text-3xl font-bold">
+                  Rs. {totalPaidAmount.toLocaleString()}
+                </p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <DollarSign size={20} className="sm:w-6 sm:h-6" />
+              </div>
+            </div>
+            <p className="text-xs opacity-75">
+              {((totalPaidAmount / totalSalesAmount) * 100).toFixed(1)}% collected
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-4 sm:p-6 text-white sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs sm:text-sm font-medium opacity-90 mb-1">Pending Amount</p>
+                <p className="text-2xl sm:text-3xl font-bold">
+                  Rs. {totalRemaining.toLocaleString()}
+                </p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Clock size={20} className="sm:w-6 sm:h-6" />
+              </div>
+            </div>
+            <p className="text-xs opacity-75">
+              {filteredSales.filter(s => !s.isDebtCleared).length} pending payments
+            </p>
+          </div>
+        </div>
+        {/* Monthly Summary Card */}
         {selectedMonth !== "all" && monthlyProfits[selectedMonth] && (
-          <div className="max-w-4xl mx-auto mb-8 bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-              {formatMonthYear(selectedMonth)} Summary
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-sm text-blue-600 font-medium">Total Sales</p>
-                <p className="text-2xl font-bold text-blue-700">
-                  Rs. {monthlyProfits[selectedMonth].totalSales.toFixed(2)}
+          <div className="mb-6 sm:mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Calendar className="text-blue-600" size={20} />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+                {formatMonthYear(selectedMonth)} Summary
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
+                <p className="text-xs sm:text-sm text-blue-700 font-medium mb-1">Total Sales</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-900">
+                  Rs. {monthlyProfits[selectedMonth].totalSales.toLocaleString()}
                 </p>
               </div>
-              <div className="bg-green-50 rounded-xl p-4">
-                <p className="text-sm text-green-600 font-medium">Total Collected</p>
-                <p className="text-2xl font-bold text-green-700">
-                  Rs. {monthlyProfits[selectedMonth].totalPaid.toFixed(2)}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
+                <p className="text-xs sm:text-sm text-green-700 font-medium mb-1">Collected</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">
+                  Rs. {monthlyProfits[selectedMonth].totalPaid.toLocaleString()}
                 </p>
               </div>
-              <div className="bg-red-50 rounded-xl p-4">
-                <p className="text-sm text-red-600 font-medium">Remaining</p>
-                <p className="text-2xl font-bold text-red-700">
-                  Rs. {monthlyProfits[selectedMonth].totalRemaining.toFixed(2)}
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4">
+                <p className="text-xs sm:text-sm text-orange-700 font-medium mb-1">Pending</p>
+                <p className="text-xl sm:text-2xl font-bold text-orange-900">
+                  Rs. {monthlyProfits[selectedMonth].totalRemaining.toLocaleString()}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* All Months Profit Overview */}
+        {/* All Months Overview */}
         {selectedMonth === "all" && sortedMonths.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Monthly Profit Overview</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="mb-6 sm:mb-8">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Monthly Breakdown</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {sortedMonths.map(month => (
-                <div key={month} className="bg-white rounded-xl shadow-lg p-5 border border-gray-100 hover:shadow-xl transition-all">
+                <div key={month} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-bold text-gray-800">{formatMonthYear(month)}</h4>
+                    <h4 className="text-sm sm:text-base font-bold text-gray-900">
+                      {formatMonthYear(month)}
+                    </h4>
                     <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full">
-                      {monthlyProfits[month].count} sales
+                      {monthlyProfits[month].count}
                     </span>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 text-xs sm:text-sm">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Sales:</span>
-                      <span className="font-semibold text-blue-600">Rs. {monthlyProfits[month].totalSales.toFixed(2)}</span>
+                      <span className="text-gray-600">Sales:</span>
+                      <span className="font-semibold text-gray-900">
+                        Rs. {monthlyProfits[month].totalSales.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Collected:</span>
-                      <span className="font-semibold text-green-600">Rs. {monthlyProfits[month].totalPaid.toFixed(2)}</span>
+                      <span className="text-gray-600">Collected:</span>
+                      <span className="font-semibold text-green-600">
+                        Rs. {monthlyProfits[month].totalPaid.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Pending:</span>
-                      <span className="font-semibold text-red-600">Rs. {monthlyProfits[month].totalRemaining.toFixed(2)}</span>
+                      <span className="text-gray-600">Pending:</span>
+                      <span className="font-semibold text-orange-600">
+                        Rs. {monthlyProfits[month].totalRemaining.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -583,147 +658,140 @@ const TotalSales = () => {
           </div>
         )}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white transform transition hover:scale-105">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium uppercase tracking-wide opacity-90">Total Sales</h3>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold">Rs. {totalSalesAmount.toFixed(2)}</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-6 text-white transform transition hover:scale-105">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium uppercase tracking-wide opacity-90">Total Collected</h3>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold">Rs. {totalPaidAmount.toFixed(2)}</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-xl p-6 text-white transform transition hover:scale-105">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium uppercase tracking-wide opacity-90">Remaining</h3>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold">Rs. {totalRemaining.toFixed(2)}</p>
-          </div>
-        </div>
+     
 
         {/* Sales Items Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredSales.map((item) => (
-            <div key={item._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800">{item.customerName || "Unknown"}</h3>
-                    {item.shopName && (
-                      <p className="text-sm text-gray-600 mt-1">Shop: {item.shopName}</p>
-                    )}
-                    <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
-                      item.isDebtCleared ? "bg-green-500 text-white" : "bg-amber-500 text-white"
-                    }`}>
-                      {item.isDebtCleared ? "✓ Paid" : "⏳ Pending"}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openEditInvoice(item)}
-                      className="bg-amber-600 hover:bg-amber-700 text-white p-2.5 rounded-lg shadow-md transition-all transform hover:scale-105"
-                      title="Edit Invoice"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => downloadInvoiceWord(item)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-lg shadow-md transition-all transform hover:scale-105"
-                      title="Download Invoice"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+        <div className="space-y-4">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900">Sales Transactions</h3>
+          
+          {filteredSales.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 sm:p-12 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="text-gray-400" size={32} />
               </div>
-              
-              <div className="p-6 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">City</span>
-                  <span className="font-semibold text-gray-800">{item.city}</span>
-                </div>
-
-                {/* Products List - Expandable */}
-                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                  <div 
-                    className="flex items-center justify-between cursor-pointer"
-                    onClick={() => toggleExpand(item._id)}
-                  >
-                    <h3 className="text-sm font-semibold text-gray-700">
-                      Products ({item.items?.length || 0})
-                    </h3>
-                    <svg 
-                      className={`w-5 h-5 text-gray-500 transition-transform ${
-                        expandedSale === item._id ? "rotate-180" : ""
-                      }`}
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+              <p className="text-gray-600">No sales found for this period</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+              {filteredSales.map((item) => (
+                <div key={item._id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 overflow-hidden">
+                  {/* Card Header */}
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-200">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">
+                          {item.customerName || "Unknown"}
+                        </h3>
+                        {item.shopName && (
+                          <p className="text-xs sm:text-sm text-gray-600 truncate mt-0.5">
+                            {item.shopName}
+                          </p>
+                        )}
+                        <span className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-full text-xs font-semibold ${
+                          item.isDebtCleared 
+                            ? "bg-green-100 text-green-700" 
+                            : "bg-orange-100 text-orange-700"
+                        }`}>
+                          {item.isDebtCleared ? "✓ Paid" : "⏳ Pending"}
+                        </span>
+                      </div>
+                      <div className="flex gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => openEditInvoice(item)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors"
+                          aria-label="Edit Invoice"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => downloadInvoiceWord(item)}
+                          className="bg-gray-700 hover:bg-gray-800 text-white p-2 rounded-lg transition-colors"
+                          aria-label="Download Invoice"
+                        >
+                          <Download size={16} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   
-                  {expandedSale === item._id && (
-                    <div className="mt-3 space-y-2">
-                      {item.items?.map((product, index) => (
-                        <div key={index} className="bg-white rounded p-2 text-xs">
-                          <div className="flex justify-between items-start">
-                            <span className="font-medium text-gray-800">{product.productName}</span>
-                            <span className="text-gray-600">×{product.quantity}</span>
-                            
-                          </div>
-                          <div className="flex justify-between mt-1 text-gray-500">
-                            <span>Rs. {product.pricePerUnit.toFixed(2)} each</span>
-                            <span className="font-semibold">Rs. {product.itemTotal.toFixed(2)}</span>
-                            <span className="font-semibold">Batch: {product.batchNo}</span>
-                            
-                          </div>
-                        </div>
-                      ))}
+                  {/* Card Body */}
+                  <div className="p-4 sm:p-5 space-y-3">
+                    <div className="flex justify-between items-center text-xs sm:text-sm">
+                      <span className="text-gray-600">Location</span>
+                      <span className="font-semibold text-gray-900">{item.city}</span>
                     </div>
-                  )}
+
+                    {/* Products List - Expandable */}
+                    <div className="bg-gray-50 rounded-xl border border-gray-200">
+                      <button
+                        onClick={() => toggleExpand(item._id)}
+                        className="w-full flex items-center justify-between p-3 hover:bg-gray-100 transition-colors rounded-xl"
+                      >
+                        <span className="text-xs sm:text-sm font-semibold text-gray-700">
+                          Products ({item.items?.length || 0})
+                        </span>
+                        <ChevronDown 
+                          className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-transform ${
+                            expandedSale === item._id ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      
+                      {expandedSale === item._id && (
+                        <div className="px-3 pb-3 space-y-2">
+                          {item.items?.map((product, index) => (
+                            <div key={index} className="bg-white rounded-lg p-2.5 border border-gray-100">
+                              <div className="flex justify-between items-start gap-2 mb-1.5">
+                                <span className="text-xs sm:text-sm font-medium text-gray-900 flex-1">
+                                  {product.productName}
+                                </span>
+                                <span className="text-xs text-gray-600 flex-shrink-0">
+                                  ×{product.quantity}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-xs text-gray-600">
+                                <span>Rs. {product.pricePerUnit.toLocaleString()}/unit</span>
+                                <span className="font-semibold text-gray-900">
+                                  Rs. {product.itemTotal.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="mt-1 text-xs text-gray-500">
+                                Batch: {product.batchNo}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Amount Summary */}
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3 sm:p-4 space-y-2">
+                      <div className="flex justify-between items-center text-xs sm:text-sm">
+                        <span className="text-gray-700 font-medium">Total Amount</span>
+                        <span className="font-bold text-gray-900">
+                          Rs. {item.totalAmount.toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs sm:text-sm">
+                        <span className="text-green-700 font-medium">Paid</span>
+                        <span className="font-bold text-green-600">
+                          Rs. {item.paidAmount.toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs sm:text-sm pt-2 border-t border-gray-300">
+                        <span className="text-orange-700 font-medium">Remaining</span>
+                        <span className="font-bold text-orange-600">
+                          Rs. {item.remainingAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">Total Amount</span>
-                    <span className="font-bold text-gray-800">Rs. {item.totalAmount.toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-green-700">Paid</span>
-                    <span className="font-bold text-green-600">Rs. {item.paidAmount.toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-red-700">Remaining</span>
-                    <span className="font-bold text-red-600">Rs. {item.remainingAmount.toFixed(2)}</span>
-                    
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
