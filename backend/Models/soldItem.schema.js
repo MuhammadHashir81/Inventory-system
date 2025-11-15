@@ -15,7 +15,7 @@ const soldItemSchema = new mongoose.Schema({
       quantity: { type: Number, required: true },
       pricePerUnit: { type: Number, required: true },
       itemTotal: { type: Number, required: true }, // quantity * pricePerUnit
-      batchNo: { type: String, required: true },
+      batchNo: { type: String, required: false },
     }
   ],
   totalAmount: { type: Number, required: true }, // Sum of all itemTotal
