@@ -1,5 +1,6 @@
 import { useContext, useState, useMemo, React } from "react";
 import { SoldItemsContext } from "../../Components/Context/SoldItemsProvider";
+import { AdminProductsContext } from "../../Components/Context/AdminProductsProvider";
 import { Calendar, ChevronDown, Clock, DollarSign, Download, Edit, TrendingUp, Search, X, Plus, Trash2 } from "lucide-react";
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -7,10 +8,11 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Checkbox, FormControlLabel } from '@mui/material';
+import { Checkbox, FormControlLabel, Autocomplete, TextField } from '@mui/material';
 
 const TotalSales = () => {
   const { soldItems, fetchSoldItems, deleteSoldItems } = useContext(SoldItemsContext);
+  const { products } = useContext(AdminProductsContext);
   console.log(soldItems)
   const [expandedSale, setExpandedSale] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("all");
@@ -139,6 +141,10 @@ const TotalSales = () => {
     );
   }, [productSearchInput, uniqueProducts]);
 
+  const availableProducts = useMemo(() => {
+    return products.filter(p => p.inventory > 0);
+  }, [products]);
+
   const toggleExpand = (saleId) => {
     setExpandedSale(expandedSale === saleId ? null : saleId);
   };
@@ -188,6 +194,31 @@ const TotalSales = () => {
       const newTotal = updatedItems.reduce((sum, item) => sum + (item.itemTotal || 0), 0);
       const newRemaining = Math.max(0, newTotal - (prev.paidAmount || 0));
       
+      return {
+        ...prev,
+        items: updatedItems,
+        totalAmount: newTotal,
+        remainingAmount: newRemaining
+      };
+    });
+  };
+
+  const selectProductForInvoice = (index, selectedProduct) => {
+    if (!selectedProduct) return;
+
+    setInvoiceData(prev => {
+      const updatedItems = [...(prev.items || [])];
+      updatedItems[index] = {
+        productName: selectedProduct.name,
+        batchNo: selectedProduct.batchNo || '',
+        quantity: 1,
+        pricePerUnit: selectedProduct.price?.johrabad || 0,
+        itemTotal: selectedProduct.price?.johrabad || 0
+      };
+
+      const newTotal = updatedItems.reduce((sum, item) => sum + (item.itemTotal || 0), 0);
+      const newRemaining = Math.max(0, newTotal - (prev.paidAmount || 0));
+
       return {
         ...prev,
         items: updatedItems,
@@ -593,56 +624,71 @@ const TotalSales = () => {
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {invoiceData.items?.map((product, index) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-2">
+                    <div className="grid grid-cols-1 gap-3 mb-2">
                       <div>
-                        <label className="text-xs font-medium text-gray-600">Product Name</label>
-                        <input
-                          type="text"
-                          value={product.productName || ''}
-                          onChange={(e) => handleItemChange(index, 'productName', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">Product Name</label>
+                        <Autocomplete
+                          fullWidth
+                          size="small"
+                          options={availableProducts}
+                          getOptionLabel={(option) => `${option.name} (Stock: ${option.inventory})`}
+                          value={availableProducts.find(p => p.name === product.productName) || null}
+                          onChange={(e, newValue) => selectProductForInvoice(index, newValue)}
+                          renderInput={(params) => (
+                            <TextField 
+                              {...params} 
+                              placeholder="Search and select product..."
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  fontSize: '0.875rem'
+                                }
+                              }}
+                            />
+                          )}
                         />
                       </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-600">Batch No</label>
-                        <input
-                          type="text"
-                          value={product.batchNo || ''}
-                          onChange={(e) => handleItemChange(index, 'batchNo', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-600">Quantity</label>
-                        <input
-                          type="number"
-                          value={product.quantity || 0}
-                          onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-600">Price Per Unit</label>
-                        <input
-                          type="number"
-                          value={product.pricePerUnit || 0}
-                          onChange={(e) => handleItemChange(index, 'pricePerUnit', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
-                      </div>
-                      <div className="flex items-end gap-2">
-                        <div className="flex-1">
-                          <label className="text-xs font-medium text-gray-600">Total</label>
-                          <div className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-semibold text-blue-600">
-                            Rs. {((product.quantity || 0) * (product.pricePerUnit || 0)).toFixed(2)}
-                          </div>
+                      <div className="grid grid-cols-4 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Batch No</label>
+                          <input
+                            type="text"
+                            value={product.batchNo || ''}
+                            onChange={(e) => handleItemChange(index, 'batchNo', e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                          />
                         </div>
-                        <button
-                          onClick={() => removeProductFromInvoice(index)}
-                          className="bg-red-600 hover:bg-red-700 text-white p-2 rounded transition"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Quantity</label>
+                          <input
+                            type="number"
+                            value={product.quantity || 0}
+                            onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Price Per Unit</label>
+                          <input
+                            type="number"
+                            value={product.pricePerUnit || 0}
+                            onChange={(e) => handleItemChange(index, 'pricePerUnit', e.target.value)}
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                          />
+                        </div>
+                        <div className="flex items-end gap-2">
+                          <div className="flex-1">
+                            <label className="text-xs font-medium text-gray-600">Total</label>
+                            <div className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-semibold text-blue-600">
+                              Rs. {((product.quantity || 0) * (product.pricePerUnit || 0)).toFixed(2)}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeProductFromInvoice(index)}
+                            className="bg-red-600 hover:bg-red-700 text-white p-2 rounded transition"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
