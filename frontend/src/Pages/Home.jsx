@@ -173,89 +173,89 @@ const Home = () => {
     const totalPrice = calculateTotal();
 
     // Inside handleSell function - FULL PAYMENT section
-if (saleType === "full") {
-  if (!customerName) {
-    toast.error("Provide customer name");
-    return;
-  }
-
-  const itemsList = cartItems.map(item =>
-    `${item.product.name} (${item.quantity}x)`
-  ).join(", ");
-
-  showConfirmDialog(
-    "Confirm Full Payment Sale",
-    `Sell ${cartItems.length} product(s): ${itemsList} for Rs. ${totalPrice.toLocaleString()} (${city}) to ${customerName}?`,
-    async () => {
-      const orderData = {
-        type: "full",
-        items: cartItems.map(item => ({
-          productId: item.product._id,
-          quantity: item.quantity,
-          batchNo: item.product.batchNo || "", // Get from product, not order level
-        })),
-        paidAmount: totalPrice,
-        customerName,
-        shopName,
-        city,
-      };
-
-      const res = await sellProducts(orderData);
-      if (res.success) {
-        await fetchSoldItems();
-        toast.success("Sold successfully!");
-        closeModal();
-      } else {
-        toast.error(res.message || "Error recording sale");
+    if (saleType === "full") {
+      if (!customerName) {
+        toast.error("Provide customer name");
+        return;
       }
-    }
-  );
-} else {
-  // PARTIAL PAYMENT section
-  if (!customerName || paidAmount === "") {
-    toast.error("Provide customer name and paid amount");
-    return;
-  }
 
-  const paid = Number(paidAmount);
-  if (paid > totalPrice) {
-    toast.error(`Paid cannot exceed Rs. ${totalPrice.toLocaleString()}`);
-    return;
-  }
+      const itemsList = cartItems.map(item =>
+        `${item.product.name} (${item.quantity}x)`
+      ).join(", ");
 
-  const itemsList = cartItems.map(item =>
-    `${item.product.name} (${item.quantity}x)`
-  ).join(", ");
+      showConfirmDialog(
+        "Confirm Full Payment Sale",
+        `Sell ${cartItems.length} product(s): ${itemsList} for Rs. ${totalPrice.toLocaleString()} (${city}) to ${customerName}?`,
+        async () => {
+          const orderData = {
+            type: "full",
+            items: cartItems.map(item => ({
+              productId: item.product._id,
+              quantity: item.quantity,
+              batchNo: item.product.batchNo || "", // Get from product, not order level
+            })),
+            paidAmount: totalPrice,
+            customerName,
+            shopName,
+            city,
+          };
 
-  showConfirmDialog(
-    "Confirm Partial Payment Sale",
-    `Sell ${cartItems.length} product(s): ${itemsList} with Rs. ${paid.toLocaleString()} paid and Rs. ${(totalPrice - paid).toLocaleString()} pending for ${customerName}?`,
-    async () => {
-      const orderData = {
-        type: "partial",
-        items: cartItems.map(item => ({
-          productId: item.product._id,
-          quantity: item.quantity,
-          batchNo: item.product.batchNo || "", // Get from product, not order level
-        })),
-        paidAmount: paid,
-        customerName,
-        shopName,
-        city,
-      };
-
-      const res = await sellProducts(orderData);
-      if (res.success) {
-        await fetchSoldItems();
-        fetchDebts();
-        toast.success("Partial sale recorded!");
-        closeModal();
-      } else {
-        toast.error(res.message || "Error recording sale");
+          const res = await sellProducts(orderData);
+          if (res.success) {
+            await fetchSoldItems();
+            toast.success("Sold successfully!");
+            closeModal();
+          } else {
+            toast.error(res.message || "Error recording sale");
+          }
+        }
+      );
+    } else {
+      // PARTIAL PAYMENT section
+      if (!customerName || paidAmount === "") {
+        toast.error("Provide customer name and paid amount");
+        return;
       }
+
+      const paid = Number(paidAmount);
+      if (paid > totalPrice) {
+        toast.error(`Paid cannot exceed Rs. ${totalPrice.toLocaleString()}`);
+        return;
+      }
+
+      const itemsList = cartItems.map(item =>
+        `${item.product.name} (${item.quantity}x)`
+      ).join(", ");
+
+      showConfirmDialog(
+        "Confirm Partial Payment Sale",
+        `Sell ${cartItems.length} product(s): ${itemsList} with Rs. ${paid.toLocaleString()} paid and Rs. ${(totalPrice - paid).toLocaleString()} pending for ${customerName}?`,
+        async () => {
+          const orderData = {
+            type: "partial",
+            items: cartItems.map(item => ({
+              productId: item.product._id,
+              quantity: item.quantity,
+              batchNo: item.product.batchNo || "", // Get from product, not order level
+            })),
+            paidAmount: paid,
+            customerName,
+            shopName,
+            city,
+          };
+
+          const res = await sellProducts(orderData);
+          if (res.success) {
+            await fetchSoldItems();
+            fetchDebts();
+            toast.success("Partial sale recorded!");
+            closeModal();
+          } else {
+            toast.error(res.message || "Error recording sale");
+          }
+        }
+      );
     }
-  );
-}
   };
 
   return (
@@ -265,36 +265,13 @@ if (saleType === "full") {
 
         {/* Header Section */}
         <Fade in timeout={600}>
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl mb-6 shadow-xl transform hover:scale-105 transition-transform">
-              <Package className="w-10 h-10 text-white" />
-            </div>
-            <Typography
-              variant="h3"
-              className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 mb-3"
-              sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}
-            >
-              Products Overview
-            </Typography>
-
-            {/* Stats Bar */}
-            {products.length > 0 && (
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Chip
-                  label={`${products.length} Products`}
-                  sx={{ bgcolor: 'rgba(59, 130, 246, 0.1)', color: 'rgb(37, 99, 235)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
-                />
-                <Chip
-                  label={`${products.filter(p => p.inventory > 0).length} In Stock`}
-                  sx={{ bgcolor: 'rgba(34, 197, 94, 0.1)', color: 'rgb(22, 163, 74)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
-                />
-                <Chip
-                  label={`${products.filter(p => p.inventory === 0).length} Out of Stock`}
-                  sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(220, 38, 38)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
-                />
-              </div>
-            )}
-          </div>
+          <Typography
+            variant="h3"
+            className="font-bold pb-2 bg-clip-text text-center text-transparent bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 "
+            sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}
+          >
+            Products Overview
+          </Typography>
         </Fade>
 
         {/* Search Bar */}
@@ -343,14 +320,34 @@ if (saleType === "full") {
                   Found {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
                 </Typography>
               )}
+
+              {/* Stats Bar */}
+              {products.length > 0 && (
+                <div className="mt-8 flex flex-wrap justify-center gap-4">
+                  <Chip
+                    label={`${products.length} Products`}
+                    sx={{ bgcolor: 'rgba(59, 130, 246, 0.1)', color: 'rgb(37, 99, 235)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
+                  />
+                  <Chip
+                    label={`${products.filter(p => p.inventory > 0).length} In Stock`}
+                    sx={{ bgcolor: 'rgba(34, 197, 94, 0.1)', color: 'rgb(22, 163, 74)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
+                  />
+                  <Chip
+                    label={`${products.filter(p => p.inventory === 0).length} Out of Stock`}
+                    sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(220, 38, 38)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
+                  />
+                </div>
+              )}
+
             </div>
+
           </Fade>
         )}
 
         {/* Products Grid */}
         {products.length === 0 ? (
           <Fade in timeout={800}>
-            <div className="text-center py-20">
+            <div className="text-center py-10">
               <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mb-6 shadow-inner">
                 <Package className="w-12 h-12 text-gray-400" />
               </div>
@@ -360,7 +357,7 @@ if (saleType === "full") {
           </Fade>
         ) : filteredProducts.length === 0 ? (
           <Fade in timeout={800}>
-            <div className="text-center py-20">
+            <div className="text-center py-10">
               <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mb-6 shadow-inner">
                 <Search className="w-12 h-12 text-gray-400" />
               </div>
@@ -386,9 +383,9 @@ if (saleType === "full") {
                     sx={{ borderRadius: 4, border: '1px solid', borderColor: 'rgba(0,0,0,0.06)', '&:hover': { borderColor: 'rgba(59, 130, 246, 0.3)' } }}
                   >
                     <CardContent className="relative p-6">
-                      <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start justify-between">
                         <div className="flex-1 mr-3">
-                          <Typography variant="h6" className="font-bold text-gray-900 mb-2 line-clamp-1" sx={{ fontSize: '1.125rem' }}>
+                          <Typography variant="h6" className="!font-bold text-gray-900 mb-2 line-clamp-1" sx={{ fontSize: '1.125rem' }}>
                             {product.name}
                           </Typography>
                         </div>
@@ -396,46 +393,45 @@ if (saleType === "full") {
                           <Chip label={stockStatus.label} color={stockStatus.color} size="small" sx={{ fontWeight: 600, fontSize: '0.7rem', height: '24px', '& .MuiChip-label': { px: 1.5 } }} />
                         </Tooltip>
                       </div>
-                      <Typography variant="body2" className="text-gray-600 mb-4 line-clamp-2" sx={{ minHeight: '40px', lineHeight: 1.5 }}>
+                      <Typography  className="text-gray-600 line-clamp-2 !text-[12px] mb-1">
                         {product.description}
                       </Typography>
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg mb-4">
+                      <div className="inline-flex items-center gap-2 px-2 py-1.5 bg-gray-50 mt-4 mb-2">
                         <Package className="w-4 h-4 text-gray-500" />
-                        <Typography variant="caption" className="text-gray-700 font-semibold">
+                        <Typography variant="caption" className="text-gray-700 font-semibold !text-[10px]">
                           {product.inventory} units available
                         </Typography>
                       </div>
-                      <Divider sx={{ my: 2 }} />
-                      <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
-                        <div className="flex items-center justify-between mb-3 pb-3 border-b border-blue-100">
+                      <div className=" p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-md border border-blue-100">
+                        <div className="flex items-center justify-between ">
                           <div className="flex items-center gap-2">
                             <MapPin className="w-3.5 h-3.5 text-blue-600" />
                             <Typography variant="caption" className="text-gray-700 font-semibold">
                               Johrabad
                             </Typography>
                           </div>
-                          <Typography variant="h6" className="font-bold text-blue-600" sx={{ fontSize: '1rem' }}>
+                          <Typography variant="h6" className="font-bold text-blue-600 !text-xs">
                             Rs. {(product.price?.johrabad ?? 0).toLocaleString()}
                           </Typography>
                         </div>
-                        <div className="flex items-center justify-between mb-3 pb-3 border-b border-blue-100">
+                        <div className="flex items-center justify-between mb-1 pb-1 border-b border-blue-100">
                           <div className="flex items-center gap-2">
                             <MapPin className="w-3.5 h-3.5 text-indigo-600" />
                             <Typography variant="caption" className="text-gray-700 font-semibold">
                               Other Cities
                             </Typography>
                           </div>
-                          <Typography variant="h6" className="font-bold text-indigo-600" sx={{ fontSize: '1rem' }}>
+                          <Typography variant="h6" className="font-bold text-indigo-600 !text-xs">
                             Rs. {(product.price?.other ?? 0).toLocaleString()}
                           </Typography>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Typography variant="caption" className="text-gray-700 font-semibold">
+                            <Typography variant="caption" className="text-gray-700 font-semibold !text-xs">
                               Batch No
                             </Typography>
                           </div>
-                          <Typography variant="h6" className="font-bold text-indigo-600" sx={{ fontSize: '0.95rem' }}>
+                          <Typography variant="h6" className="font-bold text-indigo-600 !text-xs">
                             {product.batchNo || 'N/A'}
                           </Typography>
                         </div>
@@ -450,7 +446,6 @@ if (saleType === "full") {
                           startIcon={<ShoppingCart className="w-4 h-4" />}
                           sx={{
                             borderRadius: 2,
-                            py: 1.5,
                             fontWeight: 600,
                             textTransform: 'none',
                             fontSize: '0.95rem',
