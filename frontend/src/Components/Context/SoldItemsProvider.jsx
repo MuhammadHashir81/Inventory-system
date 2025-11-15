@@ -9,14 +9,14 @@ const SoldItemsProvider = ({ children }) => {
   const [soldItems, setSoldItems] = useState([]);
 
   const fetchSoldItems = async () => {
-  try {
-    const res = await axios.get(`${apiUrl}/api/sold-items/get`);
-    console.log("sold items are",res.data);
-    if (res.data.soldItems) setSoldItems(res.data.soldItems); // <-- changed from items to soldItems
-  } catch (error) {
-    console.error("Fetch sold items error:", error);
-  }
-};
+    try {
+      const res = await axios.get(`${apiUrl}/api/sold-items/get`);
+      console.log("sold items are", res.data);
+      if (res.data.soldItems) setSoldItems(res.data.soldItems); // <-- changed from items to soldItems
+    } catch (error) {
+      console.error("Fetch sold items error:", error);
+    }
+  };
 
   const addSoldItem = async (item) => {
     try {
@@ -30,12 +30,24 @@ const SoldItemsProvider = ({ children }) => {
     }
   };
 
+  const deleteSoldItems = async (id) => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/sold-items/delete/${id}`);
+
+      if (res.data.soldItems) setSoldItems(res.data.soldItems);
+
+    } catch (error) {
+      console.error("Fetch sold items error:", error);
+    }
+  };
+
+
   useEffect(() => {
     fetchSoldItems();
   }, []);
 
   return (
-    <SoldItemsContext.Provider value={{ soldItems, fetchSoldItems, addSoldItem }}>
+    <SoldItemsContext.Provider value={{ soldItems, fetchSoldItems, addSoldItem, deleteSoldItems }}>
       {children}
     </SoldItemsContext.Provider>
   );

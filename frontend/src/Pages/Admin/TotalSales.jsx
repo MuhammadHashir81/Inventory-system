@@ -1,21 +1,38 @@
-import { useContext, useState, useMemo } from "react";
+import { useContext, useState, useMemo, React } from "react";
 import { SoldItemsContext } from "../../Components/Context/SoldItemsProvider";
-import { Calendar, ChevronDown, Clock, DollarSign, Download, Edit, TrendingUp } from "lucide-react";
+import { Calendar, ChevronDown, Clock, DollarSign, Download, Edit, TrendingUp, Search, X } from "lucide-react";
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const TotalSales = () => {
-  const { soldItems, fetchSoldItems } = useContext(SoldItemsContext);
+  const { soldItems, fetchSoldItems, deleteSoldItems } = useContext(SoldItemsContext);
   console.log(soldItems)
   const [expandedSale, setExpandedSale] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("all");
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [invoiceData, setInvoiceData] = useState({});
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [searchType, setSearchType] = useState("none");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [shopSearchInput, setShopSearchInput] = useState("");
+  const [productSearchInput, setProductSearchInput] = useState("");
 
-  // Calculate monthly profits
+  const handleClickOpen = () => { 
+    setDeleteOpen(true);
+  };
+
+  const handleClose = () => {
+    setDeleteOpen(false);
+  };
+
   const monthlyProfits = useMemo(() => {
     const profits = {};
     
     soldItems.forEach(item => {
-      // Assuming each item has a createdAt or date field
       const date = new Date(item.createdAt || item.date || Date.now());
       const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       
@@ -37,26 +54,89 @@ const TotalSales = () => {
     return profits;
   }, [soldItems]);
 
-  // Get sorted month list
   const sortedMonths = useMemo(() => {
     return Object.keys(monthlyProfits).sort().reverse();
   }, [monthlyProfits]);
 
-  // Calculate totals
   const totalSalesAmount = soldItems.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
   const totalPaidAmount = soldItems.reduce((sum, item) => sum + (item.paidAmount || 0), 0);
   const totalRemaining = soldItems.reduce((sum, item) => sum + (item.remainingAmount || 0), 0);
 
-  // Filter sales by selected month
   const filteredSales = useMemo(() => {
-    if (selectedMonth === "all") return soldItems;
-    
-    return soldItems.filter(item => {
+    let filtered = selectedMonth === "all" ? soldItems : soldItems.filter(item => {
       const date = new Date(item.createdAt || item.date || Date.now());
       const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       return monthYear === selectedMonth;
     });
-  }, [soldItems, selectedMonth]);
+
+    if (searchType === "shop" && searchQuery) {
+      filtered = filtered.filter(item => 
+        item.shopName?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    } else if (searchType === "product" && searchQuery) {
+      filtered = filtered.filter(item =>
+        item.items?.some(product => 
+          product.productName?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    }
+
+    return filtered;
+  }, [soldItems, selectedMonth, searchType, searchQuery]);
+
+  const uniqueShops = useMemo(() => {
+    const shops = new Set();
+    soldItems.forEach(item => {
+      if (item.shopName) shops.add(item.shopName);
+    });
+    return Array.from(shops).sort();
+  }, [soldItems]);
+
+  const uniqueProducts = useMemo(() => {
+    const products = new Set();
+    soldItems.forEach(item => {
+      item.items?.forEach(product => {
+        if (product.productName) products.add(product.productName);
+      });
+    });
+    return Array.from(products).sort();
+  }, [soldItems]);
+
+  const getShopOrderCount = (shopName) => {
+    return soldItems.filter(item => item.shopName?.toLowerCase() === shopName.toLowerCase()).length;
+  };
+
+  const getProductOrderCount = (productName) => {
+    return soldItems.filter(item =>
+      item.items?.some(product => product.productName?.toLowerCase() === productName.toLowerCase())
+    ).length;
+  };
+
+  const getProductTotalQuantity = (productName) => {
+    let totalQty = 0;
+    soldItems.forEach(item => {
+      item.items?.forEach(product => {
+        if (product.productName?.toLowerCase() === productName.toLowerCase()) {
+          totalQty += product.quantity || 0;
+        }
+      });
+    });
+    return totalQty;
+  };
+
+  const filteredShops = useMemo(() => {
+    if (!shopSearchInput) return [];
+    return uniqueShops.filter(shop => 
+      shop.toLowerCase().includes(shopSearchInput.toLowerCase())
+    );
+  }, [shopSearchInput, uniqueShops]);
+
+  const filteredProducts = useMemo(() => {
+    if (!productSearchInput) return [];
+    return uniqueProducts.filter(product => 
+      product.toLowerCase().includes(productSearchInput.toLowerCase())
+    );
+  }, [productSearchInput, uniqueProducts]);
 
   const toggleExpand = (saleId) => {
     setExpandedSale(expandedSale === saleId ? null : saleId);
@@ -102,6 +182,11 @@ const TotalSales = () => {
     const random = Math.floor(Math.random() * 10000);
     return `INV${timestamp}${random}`.slice(0, 12);
   };
+
+  const handleDeleteSoldItem = async (id) => {
+    await deleteSoldItems(id);
+    fetchSoldItems();
+  }
 
   const downloadInvoiceWord = (item) => {
     const dataToUse = editingInvoice === item._id ? invoiceData : item;
@@ -331,6 +416,31 @@ const TotalSales = () => {
   if (soldItems.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex items-center justify-center">
+          <div>
+        <Dialog
+          open={deleteOpen}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Use Google's location service?"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Let Google help apps determine location. This means sending anonymous
+              location data to Google, even when no apps are running.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>cancel</Button>
+            <Button onClick={handleClose} autoFocus>
+              delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+
         <div className="text-center bg-white rounded-2xl shadow-lg p-12 max-w-md">
           <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,7 +454,6 @@ const TotalSales = () => {
     );
   }
 
-  // Invoice Edit Modal
   if (editingInvoice) {
     return (
       <div className="fixed inset-0 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-auto">
@@ -360,7 +469,6 @@ const TotalSales = () => {
           </div>
 
           <div className="p-6 overflow-y-auto max-h-[calc(100vh-200px)] space-y-6">
-            {/* Customer Info */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
@@ -391,7 +499,6 @@ const TotalSales = () => {
               </div>
             </div>
 
-            {/* Products */}
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Products</h3>
               <div className="space-y-3">
@@ -446,7 +553,6 @@ const TotalSales = () => {
               </div>
             </div>
 
-            {/* Payment Info */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
@@ -503,9 +609,8 @@ const TotalSales = () => {
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Header */}
-        <div className="flex justify-between">
-          <div className="mb-6 sm:mb-8">
+        <div className="flex justify-between mb-8">
+          <div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
               Sales Overview
             </h2>
@@ -513,29 +618,151 @@ const TotalSales = () => {
               Track and manage all your sales transactions
             </p>
           </div>
-          <div>
-          <div className="relative max-w-md">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm sm:text-base appearance-none cursor-pointer"
-            >
-              <option value="all">All Months</option>
-              {sortedMonths.map(month => (
-                <option key={month} value={month}>
-                  {formatMonthYear(month)} ({monthlyProfits[month].count} sales)
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
-          </div>
+          <div className="flex gap-3">
+            <div className="relative max-w-md">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm sm:text-base appearance-none cursor-pointer"
+              >
+                <option value="all">All Months</option>
+                {sortedMonths.map(month => (
+                  <option key={month} value={month}>
+                    {formatMonthYear(month)} ({monthlyProfits[month].count} sales)
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+            </div>
           </div>
         </div>
 
-      
-   {/* Summary Cards */}
-   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+        {/* Search Section */}
+        <div className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Search size={20} className="text-blue-600" />
+            Search Orders
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Shop Search */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search by Shop</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Type shop name..."
+                  value={searchType === "shop" ? searchQuery : shopSearchInput}
+                  onChange={(e) => {
+                    setShopSearchInput(e.target.value);
+                    if (searchType === "shop") {
+                      setSearchQuery(e.target.value);
+                    }
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+                {searchType === "shop" && searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchType("none");
+                      setSearchQuery("");
+                      setShopSearchInput("");
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+              {searchType === "shop" && searchQuery && (
+                <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-900 font-medium">
+                    Found <span className="font-bold text-lg">{filteredSales.length}</span> order(s) for <span className="font-bold">"{searchQuery}"</span>
+                  </p>
+                </div>
+              )}
+              <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
+                {filteredShops.length > 0 && filteredShops.map(shop => (
+                  <button
+                    key={shop}
+                    onClick={() => {
+                      setSearchType("shop");
+                      setSearchQuery(shop);
+                      setShopSearchInput(shop);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-blue-100 rounded-lg text-sm text-gray-700 transition flex justify-between"
+                  >
+                    <span>{shop}</span>
+                    <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">{getShopOrderCount(shop)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Product Search */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search by Product</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Type product name..."
+                  value={searchType === "product" ? searchQuery : productSearchInput}
+                  onChange={(e) => {
+                    setProductSearchInput(e.target.value);
+                    if (searchType === "product") {
+                      setSearchQuery(e.target.value);
+                    }
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+                {searchType === "product" && searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchType("none");
+                      setSearchQuery("");
+                      setProductSearchInput("");
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+              {searchType === "product" && searchQuery && (
+                <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-900 font-medium">
+                    Found <span className="font-bold text-lg">{filteredSales.length}</span> order(s) with <span className="font-bold">"{searchQuery}"</span>
+                  </p>
+                  <p className="text-sm text-green-800 mt-1">
+                    Total Quantity: <span className="font-bold text-lg">{getProductTotalQuantity(searchQuery)}</span> units
+                  </p>
+                </div>
+              )}
+              <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
+                {filteredProducts.length > 0 && filteredProducts.map(product => (
+                  <button
+                    key={product}
+                    onClick={() => {
+                      setSearchType("product");
+                      setSearchQuery(product);
+                      setProductSearchInput(product);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-green-100 rounded-lg text-sm text-gray-700 transition flex justify-between items-center"
+                  >
+                    <span>{product}</span>
+                    <div className="flex gap-2">
+                      <span className="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">{getProductOrderCount(product)} orders</span>
+                      <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">{getProductTotalQuantity(product)} qty</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-4 sm:p-6 text-white">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -585,6 +812,7 @@ const TotalSales = () => {
             </p>
           </div>
         </div>
+
         {/* Monthly Summary Card */}
         {selectedMonth !== "all" && monthlyProfits[selectedMonth] && (
           <div className="mb-6 sm:mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
@@ -657,8 +885,6 @@ const TotalSales = () => {
             </div>
           </div>
         )}
-
-     
 
         {/* Sales Items Grid */}
         <div className="space-y-4">
@@ -785,6 +1011,9 @@ const TotalSales = () => {
                         <span className="font-bold text-orange-600">
                           Rs. {item.remainingAmount.toLocaleString()}
                         </span>
+                      </div>
+                      <div className="pt-2">
+                        <button onClick={() => handleDeleteSoldItem(item._id)} className="w-full bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md text-sm font-medium transition">delete</button>
                       </div>
                     </div>
                   </div>

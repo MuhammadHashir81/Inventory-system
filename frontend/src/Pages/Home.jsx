@@ -10,7 +10,8 @@ import {
   Card, CardContent, CardActions, Chip,
   Divider, Snackbar, Alert, Dialog, DialogTitle,
   DialogContent, DialogContentText, DialogActions,
-  Fade, Grow, IconButton, InputAdornment, Tooltip, Paper
+  Fade, Grow, IconButton, InputAdornment, Tooltip, Paper,
+  Autocomplete
 } from "@mui/material";
 import { Package, ShoppingCart, Users, Store, MapPin, X, AlertCircle, Search, Plus, Trash2 } from "lucide-react";
 
@@ -103,13 +104,12 @@ const Home = () => {
     setCartItems(newCart);
   };
 
-  const selectProductForCart = (index, productId) => {
-    const selectedProduct = products.find(p => p._id === productId);
+  const selectProductForCart = (index, selectedProduct) => {
     if (!selectedProduct) return;
 
     // Check if product already in cart
     const alreadyInCart = cartItems.some((item, i) =>
-      i !== index && item.product?._id === productId
+      i !== index && item.product?._id === selectedProduct._id
     );
 
     if (alreadyInCart) {
@@ -257,6 +257,8 @@ const Home = () => {
       );
     }
   };
+
+  const availableProducts = products.filter(p => p.inventory > 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -473,277 +475,274 @@ const Home = () => {
         )}
       </div>
 
-      {/* Sell Modal with Cart */}
-      <Modal
-        open={isModalOpen}
-        onClose={closeModal}
-        closeAfterTransition
-        sx={{
-          '& .MuiBackdrop-root': {
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(4px)'
-          }
-        }}
-      >
-        <Fade in={isModalOpen}>
-          <Box sx={modalStyle}>
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <Typography variant="h5" className="font-bold text-gray-900 mb-1">
-                  Create Sale Order
-                </Typography>
-                <Typography variant="body2" className="text-gray-600">
-                  Add multiple products to the cart
-                </Typography>
+        {/* Sell Modal with Cart */}
+        <Modal
+          open={isModalOpen}
+          onClose={closeModal}
+          closeAfterTransition
+          sx={{
+            '& .MuiBackdrop-root': {
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(4px)'
+            }
+          }}
+        >
+          <Fade in={isModalOpen}>
+            <Box sx={modalStyle}>
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <Typography variant="h5" className="font-bold text-gray-900 mb-1">
+                    Create Sale Order
+                  </Typography>
+                  <Typography variant="body2" className="text-gray-600">
+                    Add multiple products to the cart
+                  </Typography>
+                </div>
+                <IconButton onClick={closeModal} size="small" sx={{ color: 'gray' }}>
+                  <X className="w-5 h-5" />
+                </IconButton>
               </div>
-              <IconButton onClick={closeModal} size="small" sx={{ color: 'gray' }}>
-                <X className="w-5 h-5" />
-              </IconButton>
-            </div>
 
-            {/* Cart Items */}
-            <div className="mb-4 max-h-64 overflow-y-auto">
-              {cartItems.map((item, index) => (
-                <Paper key={index} elevation={1} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1">
+              {/* Cart Items */}
+              <div className="mb-4 max-h-64 overflow-y-auto">
+                {cartItems.map((item, index) => (
+                  <Paper key={index} elevation={1} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <Autocomplete
+                          fullWidth
+                          size="small"
+                          options={availableProducts}
+                          getOptionLabel={(option) => `${option.name} (Stock: ${option.inventory})`}
+                          value={item.product}
+                          onChange={(e, newValue) => selectProductForCart(index, newValue)}
+                          renderInput={(params) => (
+                            <TextField {...params} label="Select Product" placeholder="Search products..." />
+                          )}
+                        />
+                      </div>
                       <TextField
-                        select
-                        fullWidth
+                        type="number"
                         size="small"
-                        label="Select Product"
-                        value={item.product?._id || ""}
-                        onChange={(e) => selectProductForCart(index, e.target.value)}
-                        SelectProps={{ native: true }}
+                        label="Qty"
+                        value={item.quantity}
+                        onChange={(e) => updateCartQuantity(index, e.target.value)}
+                        sx={{ width: 80 }}
+                        inputProps={{ min: 1, max: item.product?.inventory || 999 }}
+                      />
+
+                      
+                      <IconButton
+                        onClick={() => removeFromCart(index)}
+                        color="error"
+                        size="small"
                       >
-                        <option value="">Choose a product...</option>
-                        {products.filter(p => p.inventory > 0).map(p => (
-                          <option key={p._id} value={p._id}>
-                            {p.name} (Stock: {p.inventory})
-                          </option>
-                        ))}
-                      </TextField>
+                        <Trash2 className="w-4 h-4" />
+                      </IconButton>
                     </div>
-                    <TextField
-                      type="number"
-                      size="small"
-                      label="Qty"
-                      value={item.quantity}
-                      onChange={(e) => updateCartQuantity(index, e.target.value)}
-                      sx={{ width: 80 }}
-                      inputProps={{ min: 1, max: item.product?.inventory || 999 }}
-                    />
-                    <IconButton
-                      onClick={() => removeFromCart(index)}
-                      color="error"
-                      size="small"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </IconButton>
-                  </div>
-                  {item.product && (
-                    <div>
-                      <Typography variant="caption" className="text-gray-600 mt-2 block">
-                        Price: Rs. {(city === "johrabad" ? item.product.price?.johrabad : item.product.price?.other).toLocaleString()} × {item.quantity} = Rs. {((city === "johrabad" ? item.product.price?.johrabad : item.product.price?.other) * item.quantity).toLocaleString()}
-                      </Typography>
-                      <Typography variant="caption" className="text-gray-600 block mt-1">
-                        Batch No: {item.product.batchNo || 'N/A'}
-                      </Typography>
-                    </div>
-                  )}
-                </Paper>
-              ))}
-            </div>
+                    {item.product && (
+                      <div>
+                        <Typography variant="caption" className="text-gray-600 mt-2 block">
+                          Price: Rs. {(city === "johrabad" ? item.product.price?.johrabad : item.product.price?.other).toLocaleString()} × {item.quantity} = Rs. {((city === "johrabad" ? item.product.price?.johrabad : item.product.price?.other) * item.quantity).toLocaleString()}
+                        </Typography>
+                        <Typography variant="caption" className="text-gray-600 block mt-1">
+                          Batch No: {item.product.batchNo || 'N/A'}
+                        </Typography>
+                      </div>
+                    )}
+                  </Paper>
+                ))}
+              </div>
 
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={addProductToCart}
-              startIcon={<Plus className="w-4 h-4" />}
-              sx={{ mb: 3, textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
-            >
-              Add Another Product
-            </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={addProductToCart}
+                startIcon={<Plus className="w-4 h-4" />}
+                sx={{ mb: 3, textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
+              >
+                Add Another Product
+              </Button>
 
-            <Divider sx={{ my: 3 }} />
+              <Divider sx={{ my: 3 }} />
 
-            <ToggleButtonGroup
-              value={saleType}
-              exclusive
-              onChange={(e, value) => value && setSaleType(value)}
-              fullWidth
-              sx={{
-                mb: 3,
-                '& .MuiToggleButton-root': {
-                  py: 1.5,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  '&.Mui-selected': {
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
-                    color: 'white',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+              <ToggleButtonGroup
+                value={saleType}
+                exclusive
+                onChange={(e, value) => value && setSaleType(value)}
+                fullWidth
+                sx={{
+                  mb: 3,
+                  '& .MuiToggleButton-root': {
+                    py: 1.5,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    '&.Mui-selected': {
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+                      color: 'white',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                      }
                     }
                   }
-                }
-              }}
-            >
-              <ToggleButton value="full">
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Full Payment
-              </ToggleButton>
-              <ToggleButton value="partial">
-                <AlertCircle className="w-4 h-4 mr-2" />
-                Pending Payment
-              </ToggleButton>
-            </ToggleButtonGroup>
+                }}
+              >
+                <ToggleButton value="full">
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Full Payment
+                </ToggleButton>
+                <ToggleButton value="partial">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  Pending Payment
+                </ToggleButton>
+              </ToggleButtonGroup>
 
-            <TextField
-              label="City"
-              select
-              fullWidth
-              sx={{ mb: 2.5 }}
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              SelectProps={{ native: true }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <MapPin className="w-4 h-4 text-gray-500" />
-                  </InputAdornment>
-                ),
-              }}
-            >
-              <option value="johrabad">Johrabad</option>
-              <option value="other">Other Cities</option>
-            </TextField>
+              <TextField
+                label="City"
+                select
+                fullWidth
+                sx={{ mb: 2.5 }}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                SelectProps={{ native: true }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <MapPin className="w-4 h-4 text-gray-500" />
+                    </InputAdornment>
+                  ),
+                }}
+              >
+                <option value="johrabad">Johrabad</option>
+                <option value="other">Other Cities</option>
+              </TextField>
 
-            <TextField
-              label="Customer Name"
-              fullWidth
-              sx={{ mb: 2.5 }}
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Users className="w-4 h-4 text-gray-500" />
-                  </InputAdornment>
-                ),
-              }}
-            />
+              <TextField
+                label="Customer Name"
+                fullWidth
+                sx={{ mb: 2.5 }}
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Users className="w-4 h-4 text-gray-500" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            <TextField
-              label="Shop Name (Optional)"
-              fullWidth
-              sx={{ mb: 2.5 }}
-              value={shopName}
-              onChange={(e) => setShopName(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Store className="w-4 h-4 text-gray-500" />
-                  </InputAdornment>
-                ),
-              }}
-            />
+              <TextField
+                label="Shop Name (Optional)"
+                fullWidth
+                sx={{ mb: 2.5 }}
+                value={shopName}
+                onChange={(e) => setShopName(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Store className="w-4 h-4 text-gray-500" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            <TextField
-              label="Batch No"
-              fullWidth
-              sx={{ mb: 2.5 }}
-              value={batchNo}
-              onChange={(e) => setBatchNo(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Package className="w-4 h-4 text-gray-500" />
-                  </InputAdornment>
-                ),
-              }}
-            />
+              <TextField
+                label="Batch No"
+                fullWidth
+                sx={{ mb: 2.5 }}
+                value={batchNo}
+                onChange={(e) => setBatchNo(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Package className="w-4 h-4 text-gray-500" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            {saleType === "partial" && (
-              <Fade in>
-                <TextField
-                  label="Paid Amount"
-                  type="number"
-                  fullWidth
-                  sx={{ mb: 2.5 }}
-                  value={paidAmount}
-                  onChange={(e) => setPaidAmount(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Typography variant="body2" className="text-gray-600 font-semibold">
-                          Rs.
-                        </Typography>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Fade>
-            )}
-
-            <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
-              <div className="flex items-center justify-between mb-2">
-                <Typography variant="body2" className="text-gray-700 font-medium">
-                  Total Amount
-                </Typography>
-                <Typography variant="h6" className="font-bold text-gray-900">
-                  Rs. {calculateTotal().toLocaleString()}
-                </Typography>
-              </div>
-              {saleType === "partial" && paidAmount && (
+              {saleType === "partial" && (
                 <Fade in>
-                  <div>
-                    <Divider sx={{ my: 1.5 }} />
-                    <div className="flex items-center justify-between mb-2">
-                      <Typography variant="body2" className="text-green-700 font-medium">
-                        Paid Amount
-                      </Typography>
-                      <Typography variant="body1" className="font-bold text-green-600">
-                        Rs. {Number(paidAmount).toLocaleString()}
-                      </Typography>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Typography variant="body2" className="text-red-700 font-medium">
-                        Remaining
-                      </Typography>
-                      <Typography variant="body1" className="font-bold text-red-600">
-                        Rs. {calculateRemaining().toLocaleString()}
-                      </Typography>
-                    </div>
-                  </div>
+                  <TextField
+                    label="Paid Amount"
+                    type="number"
+                    fullWidth
+                    sx={{ mb: 2.5 }}
+                    value={paidAmount}
+                    onChange={(e) => setPaidAmount(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Typography variant="body2" className="text-gray-600 font-semibold">
+                            Rs.
+                          </Typography>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
                 </Fade>
               )}
-            </div>
 
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handleSell}
-              sx={{
-                mt: 3,
-                py: 1.75,
-                borderRadius: 2,
-                fontWeight: 600,
-                textTransform: 'none',
-                fontSize: '1rem',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
-                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-                  boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
-                }
-              }}
-            >
-              Confirm Sale
-            </Button>
-          </Box>
-        </Fade>
-      </Modal>
+              <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+                <div className="flex items-center justify-between mb-2">
+                  <Typography variant="body2" className="text-gray-700 font-medium">
+                    Total Amount
+                  </Typography>
+                  <Typography variant="h6" className="font-bold text-gray-900">
+                    Rs. {calculateTotal().toLocaleString()}
+                  </Typography>
+                </div>
+                {saleType === "partial" && paidAmount && (
+                  <Fade in>
+                    <div>
+                      <Divider sx={{ my: 1.5 }} />
+                      <div className="flex items-center justify-between mb-2">
+                        <Typography variant="body2" className="text-green-700 font-medium">
+                          Paid Amount
+                        </Typography>
+                        <Typography variant="body1" className="font-bold text-green-600">
+                          Rs. {Number(paidAmount).toLocaleString()}
+                        </Typography>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Typography variant="body2" className="text-red-700 font-medium">
+                          Remaining
+                        </Typography>
+                        <Typography variant="body1" className="font-bold text-red-600">
+                          Rs. {calculateRemaining().toLocaleString()}
+                        </Typography>
+                      </div>
+                    </div>
+                  </Fade>
+                )}
+              </div>
+
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleSell}
+                sx={{
+                  mt: 3,
+                  py: 1.75,
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                    boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
+                  }
+                }}
+              >
+                Confirm Sale
+              </Button>
+            </Box>
+          </Fade>
+        </Modal>
 
       <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={closeSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity={snackbar.severity} onClose={closeSnackbar} sx={{ borderRadius: 2, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', fontWeight: 500 }}>
