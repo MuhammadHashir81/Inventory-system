@@ -1,4 +1,3 @@
-//  ==================== Product Controller ====================
 import { SoldItem } from "../Models/soldItem.schema.js";
 import { Product } from "../Models/productSchema.js";
 import { Debt } from "../Models/debt.schema.js";
@@ -8,17 +7,17 @@ export const sellProducts = async (req, res) => {
   try {
     const {
       type,
-      items, // Array of { productId, quantity }
+      items, // Array of { productId, quantity, batchNo }
       paidAmount,
       customerName,
       shopName,
       city,
-      batchNo
     } = req.body;
     
-    console.log(req.body)
+    console.log("Request Body:", req.body);
+    
     if (!items || items.length === 0 || !type || !customerName) {
-      console.log(items,customerName,type)
+      console.log("Validation failed - Missing fields");
       return res.status(400).json({ 
         success: false, 
         message: "Missing required fields (items, type, customerName)" 
@@ -54,12 +53,14 @@ export const sellProducts = async (req, res) => {
       const itemTotal = pricePerUnit * item.quantity;
       totalAmount += itemTotal;
 
+      // Include batchNo from the item
       orderItems.push({
         productId: product._id,
         productName: product.name,
         quantity: item.quantity,
         pricePerUnit,
         itemTotal,
+        batchNo: item.batchNo || "N/A", // Get batchNo from request
       });
 
       // Update product inventory
@@ -80,7 +81,6 @@ export const sellProducts = async (req, res) => {
       type,
       items: orderItems,
       totalAmount,
-      batchNo,
       paidAmount: paid,
       remainingAmount,
       isDebtCleared: remainingAmount === 0,
@@ -97,8 +97,7 @@ export const sellProducts = async (req, res) => {
         totalAmount,
         paidAmount: paid,
         remainingAmount,
-        batchNo,
-        payments: paid > 0 ? [{ amount: paid }] : [],
+        payments: paid > 0 ? [{ amount: paid, date: new Date() }] : [],
         isCleared: false,
       });
     }
@@ -135,6 +134,67 @@ export const getSoldItems = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching sold items",
+      error: error.message,
+    });
+  }
+};
+
+// Get sold item by ID
+export const getSoldItemById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const soldItem = await SoldItem.findById(id)
+      .populate("items.productId", "name price inventory");
+
+    if (!soldItem) {
+      return res.status(404).json({
+        success: false,
+        message: "Sold item not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Sold item fetched successfully",
+      soldItem,
+    });
+  } catch (error) {
+    console.error("Error fetching sold item:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching sold item",
+      error: error.message,
+    });
+  }
+};
+
+// Delete sold item
+export const deleteSoldItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const soldItem = await SoldItem.findByIdAndDelete(id);
+
+    if (!soldItem) {
+      return res.status(404).json({
+        success: false,
+        message: "Sold item not found",
+      });
+    }
+
+    // If there was a debt, delete it too
+    if (soldItem.type === "partial") {
+      await Debt.deleteOne({ soldItemId: id });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Sold item deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting sold item:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting sold item",
       error: error.message,
     });
   }

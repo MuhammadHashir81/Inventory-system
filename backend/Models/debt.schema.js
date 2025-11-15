@@ -14,9 +14,9 @@ const debtSchema = new mongoose.Schema({
       quantity: { type: Number, required: true },
       pricePerUnit: { type: Number, required: true },
       itemTotal: { type: Number, required: true },
+      batchNo: { type: String, required: true },
     }
   ],
-  batchNo: { type: String, required: true },
   
   totalAmount: { type: Number, required: true },
   paidAmount: { type: Number, default: 0 },

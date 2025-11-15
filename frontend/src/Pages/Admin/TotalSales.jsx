@@ -6,6 +6,8 @@ const TotalSales = () => {
   console.log(soldItems)
   const [expandedSale, setExpandedSale] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("all");
+  const [editingInvoice, setEditingInvoice] = useState(null);
+  const [invoiceData, setInvoiceData] = useState({});
 
   // Calculate monthly profits
   const monthlyProfits = useMemo(() => {
@@ -65,190 +67,264 @@ const TotalSales = () => {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
-  const downloadInvoicePDF = (item) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 1200;
-    const ctx = canvas.getContext('2d');
-
-    // Background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Header with gradient background
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 140);
-    gradient.addColorStop(0, '#2563eb');
-    gradient.addColorStop(1, '#1e40af');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, 140);
-
-    // Draw Logo (Pharmacy Cross Symbol)
-    ctx.fillStyle = '#ffffff';
-    // Vertical bar of cross
-    ctx.fillRect(50, 30, 25, 80);
-    // Horizontal bar of cross
-    ctx.fillRect(30, 55, 65, 30);
-    
-    // Add circle around cross
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(62.5, 70, 50, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    // Pharmacy Name
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 42px Arial';
-    ctx.fillText('CITY PHARMACY', 140, 65);
-    
-    ctx.font = '16px Arial';
-    ctx.fillText('Your Trusted Healthcare Partner', 140, 95);
-    ctx.fillText('Contact: +92 300 8706962 | citypharmacy@example.com', 140, 118);
-    
-    // Invoice Title
-    ctx.font = 'bold 24px Arial';
-    ctx.fillText('INVOICE', 650, 60);
-    
-    ctx.font = '14px Arial';
-    const invoiceDate = new Date(item.createdAt || item.date || Date.now());
-    ctx.fillText(`Date: ${invoiceDate.toLocaleDateString()}`, 615, 90);
-    ctx.fillText(`Badge No: ${item.batchNo}`, 565, 105);
-    ctx.fillText(`Invoice #: ${item._id.slice(-8).toUpperCase()}`, 565, 120);
-
-    // Decorative line
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, 145);
-    ctx.lineTo(canvas.width, 145);
-    ctx.stroke();
-
-    // Customer Information Box
-    ctx.fillStyle = '#f3f4f6';
-    ctx.fillRect(30, 170, 740, 120);
-    
-    ctx.fillStyle = '#1f2937';
-    ctx.font = 'bold 20px Arial';
-    ctx.fillText('BILL TO:', 50, 200);
-    
-    ctx.font = '16px Arial';
-    ctx.fillText(`Customer: ${item.customerName || 'Unknown'}`, 50, 230);
-    ctx.fillText(`Shop: ${item.shopName || 'N/A'}`, 50, 255);
-    ctx.fillText(`City: ${item.city || 'N/A'}`, 50, 280);
-
-    // Products Table Header
-    ctx.fillStyle = '#3b82f6';
-    ctx.fillRect(30, 320, 740, 40);
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText('PRODUCT', 50, 345);
-    ctx.fillText('QTY', 400, 345);
-    ctx.fillText('PRICE', 500, 345);
-    ctx.fillText('TOTAL', 650, 345);
-
-    // Products Table Content
-    let yPosition = 385;
-    ctx.fillStyle = '#1f2937';
-    ctx.font = '15px Arial';
-    
-    if (item.items && item.items.length > 0) {
-      item.items.forEach((product, index) => {
-        // Alternate row background
-        if (index % 2 === 0) {
-          ctx.fillStyle = '#f9fafb';
-          ctx.fillRect(30, yPosition - 25, 740, 35);
-        }
-        
-        ctx.fillStyle = '#1f2937';
-        // Truncate long product names
-        const productName = product.productName.length > 30 
-          ? product.productName.substring(0, 30) + '...' 
-          : product.productName;
-        ctx.fillText(productName, 50, yPosition);
-        ctx.fillText(`${product.quantity}`, 400, yPosition);
-        ctx.fillText(`Rs. ${product.pricePerUnit.toFixed(2)}`, 500, yPosition);
-        ctx.fillText(`Rs. ${product.itemTotal.toFixed(2)}`, 650, yPosition);
-        
-        yPosition += 40;
-      });
-    }
-
-    // Summary Section
-    const summaryY = yPosition + 30;
-    
-    // Line separator
-    ctx.strokeStyle = '#e5e7eb';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(450, summaryY);
-    ctx.lineTo(770, summaryY);
-    ctx.stroke();
-
-    ctx.fillStyle = '#1f2937';
-    ctx.font = '16px Arial';
-    ctx.fillText('Subtotal:', 500, summaryY + 35);
-    ctx.fillText(`Rs. ${item.totalAmount.toFixed(2)}`, 650, summaryY + 35);
-
-    ctx.fillStyle = '#059669';
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText('Paid Amount:', 500, summaryY + 65);
-    ctx.fillText(`Rs. ${item.paidAmount.toFixed(2)}`, 650, summaryY + 65);
-
-    // Bold line before remaining
-    ctx.strokeStyle = '#1f2937';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(450, summaryY + 80);
-    ctx.lineTo(770, summaryY + 80);
-    ctx.stroke();
-
-    ctx.fillStyle = '#dc2626';
-    ctx.font = 'bold 18px Arial';
-    ctx.fillText('Amount Due:', 500, summaryY + 110);
-    ctx.fillText(`Rs. ${item.remainingAmount.toFixed(2)}`, 650, summaryY + 110);
-
-    // Payment Status Badge
-    const badgeY = summaryY + 150;
-    ctx.fillStyle = item.isDebtCleared ? '#059669' : '#f59e0b';
-    ctx.fillRect(480, badgeY, 180, 45);
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px Arial';
-    const statusText = item.isDebtCleared ? 'PAID IN FULL' : 'PAYMENT DUE';
-    ctx.fillText(statusText, 500, badgeY + 30);
-
-    // Footer
-    const footerY = canvas.height - 100;
-    
-    // Footer background
-    ctx.fillStyle = '#f3f4f6';
-    ctx.fillRect(0, footerY, canvas.width, 100);
-    
-    // Decorative top border for footer
-    ctx.fillStyle = '#3b82f6';
-    ctx.fillRect(0, footerY, canvas.width, 4);
-    
-    ctx.fillStyle = '#1f2937';
-    ctx.font = 'bold 18px Arial';
-    ctx.fillText('Thank you for your business!', 50, footerY + 35);
-    
-    ctx.fillStyle = '#6b7280';
-    ctx.font = '14px Arial';
-    ctx.fillText('CITY PHARMACY - Serving the community with care', 50, footerY + 65);
-    ctx.fillText('This is a computer generated invoice', 450, footerY + 65);
-
-    // Convert to image and download
-    canvas.toBlob((blob) => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `CityPharmacy_Invoice_${item.customerName}_${item._id.slice(-6)}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+  const openEditInvoice = (item) => {
+    setEditingInvoice(item._id);
+    setInvoiceData({
+      ...item,
+      items: item.items?.map(p => ({...p})) || []
     });
+  };
+
+  const closeEditInvoice = () => {
+    setEditingInvoice(null);
+    setInvoiceData({});
+  };
+
+  const handleInvoiceFieldChange = (field, value) => {
+    setInvoiceData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleItemChange = (index, field, value) => {
+    setInvoiceData(prev => ({
+      ...prev,
+      items: prev.items?.map((item, i) => 
+        i === index ? {...item, [field]: field === 'quantity' || field === 'pricePerUnit' ? parseFloat(value) || 0 : value} : item
+      )
+    }));
+  };
+
+  const generateInvoiceNumber = () => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000);
+    return `INV${timestamp}${random}`.slice(0, 12);
+  };
+
+  const downloadInvoiceWord = (item) => {
+    const dataToUse = editingInvoice === item._id ? invoiceData : item;
+    const invoiceNumber = generateInvoiceNumber();
+    const invoiceDate = new Date(dataToUse.createdAt || dataToUse.date || Date.now());
+
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          color: #1f2937;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 3px solid #3b82f6;
+          padding-bottom: 20px;
+        }
+        .pharmacy-name {
+          font-size: 28px;
+          font-weight: bold;
+          color: #2563eb;
+          margin: 10px 0;
+        }
+        .tagline {
+          font-size: 14px;
+          color: #6b7280;
+          margin: 5px 0;
+        }
+        .contact {
+          font-size: 12px;
+          color: #6b7280;
+        }
+        .invoice-title {
+          font-size: 20px;
+          font-weight: bold;
+          text-align: right;
+          margin-bottom: 10px;
+        }
+        .invoice-details {
+          text-align: right;
+          font-size: 12px;
+          margin-bottom: 20px;
+        }
+        .bill-to {
+          margin-bottom: 30px;
+          background-color: #f3f4f6;
+          padding: 15px;
+          border-radius: 5px;
+        }
+        .bill-to-title {
+          font-weight: bold;
+          font-size: 14px;
+          margin-bottom: 10px;
+        }
+        .customer-info {
+          font-size: 12px;
+          line-height: 1.8;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 30px;
+        }
+        th {
+          background-color: #3b82f6;
+          color: white;
+          padding: 12px;
+          text-align: left;
+          font-weight: bold;
+          font-size: 13px;
+        }
+        td {
+          padding: 12px;
+          border-bottom: 1px solid #e5e7eb;
+          font-size: 12px;
+        }
+        tr:nth-child(even) {
+          background-color: #f9fafb;
+        }
+        .summary {
+          margin-left: auto;
+          width: 40%;
+          margin-bottom: 30px;
+        }
+        .summary-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 10px 0;
+          border-bottom: 1px solid #e5e7eb;
+          font-size: 12px;
+        }
+        .summary-row.total {
+          border-bottom: 3px solid #1f2937;
+          font-weight: bold;
+          font-size: 14px;
+        }
+        .summary-row.amount-due {
+          color: #dc2626;
+          font-weight: bold;
+          font-size: 14px;
+          border-bottom: none;
+          margin-top: 10px;
+        }
+        .paid-section {
+          color: #059669;
+          font-weight: bold;
+          padding: 10px 0;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 40px;
+          padding-top: 20px;
+          border-top: 1px solid #e5e7eb;
+          font-size: 11px;
+          color: #6b7280;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 8px 12px;
+          border-radius: 4px;
+          font-weight: bold;
+          margin-top: 15px;
+          font-size: 12px;
+        }
+        .status-paid {
+          background-color: #059669;
+          color: white;
+        }
+        .status-pending {
+          background-color: #f59e0b;
+          color: white;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="pharmacy-name">CITY PHARMACY</div>
+        <div class="tagline">Your Trusted Healthcare Partner</div>
+        <div class="contact">Contact: +92 300 8706962</div>
+      </div>
+
+      <div class="invoice-title">INVOICE</div>
+      <div class="invoice-details">
+        <div>Date: ${invoiceDate.toLocaleDateString()}</div>
+        <div>Invoice #: ${invoiceNumber}</div>
+      </div>
+
+      <div class="bill-to">
+        <div class="bill-to-title">BILL TO:</div>
+        <div class="customer-info">
+          <div><strong>Customer:</strong> ${dataToUse.customerName || 'Unknown'}</div>
+          <div><strong>Shop:</strong> ${dataToUse.shopName || 'N/A'}</div>
+          <div><strong>City:</strong> ${dataToUse.city || 'N/A'}</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>PRODUCT</th>
+            <th>BATCH NO</th>
+            <th>QTY</th>
+            <th>PRICE</th>
+            <th>TOTAL</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dataToUse.items?.map(product => `
+            <tr>
+              <td>${product.productName}</td>
+              <td>${product.batchNo}</td>
+              <td>${product.quantity}</td>
+              <td>Rs. ${product.pricePerUnit.toFixed(2)}</td>
+              <td>Rs. ${(product.quantity * product.pricePerUnit).toFixed(2)}</td>
+            </tr>
+          `).join('') || ''}
+        </tbody>
+      </table>
+
+      <div class="summary">
+        <div class="summary-row">
+          <span>Subtotal:</span>
+          <span>Rs. ${dataToUse.totalAmount.toFixed(2)}</span>
+        </div>
+        <div class="summary-row paid-section">
+          <span>Paid Amount:</span>
+          <span>Rs. ${dataToUse.paidAmount.toFixed(2)}</span>
+        </div>
+        <div class="summary-row total">
+          <span>Amount Due:</span>
+          <span>Rs. ${dataToUse.remainingAmount.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <div class="status-badge ${dataToUse.isDebtCleared ? 'status-paid' : 'status-pending'}">
+          ${dataToUse.isDebtCleared ? 'PAID IN FULL' : 'PAYMENT DUE'}
+        </div>
+      </div>
+
+      <div class="footer">
+        <div style="margin-bottom: 10px;"><strong>Thank you for your business!</strong></div>
+        <div>CITY PHARMACY - Serving the community with care</div>
+        <div>This is a computer generated invoice</div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    const element = document.createElement('a');
+    const file = new Blob([html], { type: 'application/msword' });
+    element.href = URL.createObjectURL(file);
+    element.download = `CityPharmacy_Invoice_${dataToUse.customerName}_${invoiceNumber}.doc`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    URL.revokeObjectURL(element.href);
   };
 
   if (soldItems.length === 0) {
@@ -262,6 +338,162 @@ const TotalSales = () => {
           </div>
           <h2 className="text-3xl font-bold mb-3 text-gray-800">Total Sales</h2>
           <p className="text-gray-500 text-lg">No sales have been recorded yet.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Invoice Edit Modal
+  if (editingInvoice) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-auto">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8">
+          <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+            <h2 className="text-2xl font-bold text-white">Edit Invoice</h2>
+            <button
+              onClick={closeEditInvoice}
+              className="text-white hover:bg-blue-800 p-2 rounded-lg transition"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="p-6 overflow-y-auto max-h-[calc(100vh-200px)] space-y-6">
+            {/* Customer Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                <input
+                  type="text"
+                  value={invoiceData.customerName || ''}
+                  onChange={(e) => handleInvoiceFieldChange('customerName', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
+                <input
+                  type="text"
+                  value={invoiceData.shopName || ''}
+                  onChange={(e) => handleInvoiceFieldChange('shopName', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <input
+                  type="text"
+                  value={invoiceData.city || ''}
+                  onChange={(e) => handleInvoiceFieldChange('city', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Products */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Products</h3>
+              <div className="space-y-3">
+                {invoiceData.items?.map((product, index) => (
+                  <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-2">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Product Name</label>
+                        <input
+                          type="text"
+                          value={product.productName || ''}
+                          onChange={(e) => handleItemChange(index, 'productName', e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Batch No</label>
+                        <input
+                          type="text"
+                          value={product.batchNo || ''}
+                          onChange={(e) => handleItemChange(index, 'batchNo', e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Quantity</label>
+                        <input
+                          type="number"
+                          value={product.quantity || 0}
+                          onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Price Per Unit</label>
+                        <input
+                          type="number"
+                          value={product.pricePerUnit || 0}
+                          onChange={(e) => handleItemChange(index, 'pricePerUnit', e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Total</label>
+                        <div className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-semibold text-blue-600">
+                          Rs. {((product.quantity || 0) * (product.pricePerUnit || 0)).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Payment Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+                <input
+                  type="number"
+                  value={invoiceData.totalAmount || 0}
+                  onChange={(e) => handleInvoiceFieldChange('totalAmount', parseFloat(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Paid Amount</label>
+                <input
+                  type="number"
+                  value={invoiceData.paidAmount || 0}
+                  onChange={(e) => handleInvoiceFieldChange('paidAmount', parseFloat(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Remaining Amount</label>
+                <input
+                  type="number"
+                  value={invoiceData.remainingAmount || 0}
+                  onChange={(e) => handleInvoiceFieldChange('remainingAmount', parseFloat(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex justify-end gap-4 border-t rounded-b-2xl">
+            <button
+              onClick={closeEditInvoice}
+              className="px-6 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                downloadInvoiceWord(invoiceData);
+                closeEditInvoice();
+              }}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
+            >
+              Download Invoice
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -401,15 +633,26 @@ const TotalSales = () => {
                       {item.isDebtCleared ? "✓ Paid" : "⏳ Pending"}
                     </span>
                   </div>
-                  <button
-                    onClick={() => downloadInvoicePDF(item)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-lg shadow-md transition-all transform hover:scale-105"
-                    title="Download Invoice"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditInvoice(item)}
+                      className="bg-amber-600 hover:bg-amber-700 text-white p-2.5 rounded-lg shadow-md transition-all transform hover:scale-105"
+                      title="Edit Invoice"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => downloadInvoiceWord(item)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-lg shadow-md transition-all transform hover:scale-105"
+                      title="Download Invoice"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
               
@@ -452,6 +695,8 @@ const TotalSales = () => {
                           <div className="flex justify-between mt-1 text-gray-500">
                             <span>Rs. {product.pricePerUnit.toFixed(2)} each</span>
                             <span className="font-semibold">Rs. {product.itemTotal.toFixed(2)}</span>
+                            <span className="font-semibold">Batch: {product.batchNo}</span>
+                            
                           </div>
                         </div>
                       ))}
@@ -475,7 +720,6 @@ const TotalSales = () => {
                     <span className="font-bold text-red-600">Rs. {item.remainingAmount.toFixed(2)}</span>
                     
                   </div>
-                            <span className="font-medium text-gray-800">batch number: {item.batchNo}</span>
                 </div>
               </div>
             </div>
