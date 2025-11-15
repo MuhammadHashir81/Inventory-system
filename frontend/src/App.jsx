@@ -9,6 +9,7 @@ import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
 import Debts from "./Pages/Debts";
 import SupplierProtectedRoute from "./ProtectedRoute/SupplierProtectedRoute";
 import ChooseLogin from "./Pages/ChooseLogin";
+import "./App.css"
 
 function App() {
   return (

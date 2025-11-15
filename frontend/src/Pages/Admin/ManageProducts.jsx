@@ -208,7 +208,7 @@ const ManageProducts = () => {
 
       {/* Edit Modal */}
       <Modal open={isEditModalOpen} onClose={closeEditModal}>
-        <Box sx={style}>
+        <Box sx={style} className="max-h-[80vh] overflow-y-scroll">
           <Typography variant="h6" mb={2}>Edit Product</Typography>
           <Stack spacing={2}>
             <TextField

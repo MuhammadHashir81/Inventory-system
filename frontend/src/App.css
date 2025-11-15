@@ -1,3 +1,17 @@
 button {
-    cursor:pointer;
+    cursor: pointer !important;
+}
+
+th {
+    white-space: nowrap;
+    text-align: left;
+    margin-right: 10px;
+    padding-right: 10px;
+    font-size: 12px;
+
+}
+td {
+    white-space: nowrap;
+    text-align: left;
+    font-size: 12px;
 }
