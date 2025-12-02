@@ -18,6 +18,8 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL
       if (res.data.products) {
         setProducts(res.data.products);
       }
+
+      return res.data.products
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {

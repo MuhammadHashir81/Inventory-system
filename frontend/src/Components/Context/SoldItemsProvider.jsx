@@ -12,7 +12,9 @@ const SoldItemsProvider = ({ children }) => {
     try {
       const res = await axios.get(`${apiUrl}/api/sold-items/get`);
       console.log("sold items are", res.data);
-      if (res.data.soldItems) setSoldItems(res.data.soldItems); // <-- changed from items to soldItems
+      if (res.data.soldItems) setSoldItems(res.data.soldItems); 
+
+      return res.data.soldItems
     } catch (error) {
       console.error("Fetch sold items error:", error);
     }

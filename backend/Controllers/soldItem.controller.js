@@ -14,7 +14,6 @@ export const sellProducts = async (req, res) => {
       city,
     } = req.body;
     
-    console.log("Request Body:", req.body);
     
     if (!items || items.length === 0 || !type || !customerName) {
       console.log("Validation failed - Missing fields");

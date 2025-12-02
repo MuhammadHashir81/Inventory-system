@@ -8,22 +8,22 @@ import SupplierAuthProvider from './Components/Context/SupplierAuthProvider.jsx'
 import DebtsProvider from './Components/Context/DebtsProvider.jsx'
 import SoldItemsProvider from './Components/Context/SoldItemsProvider.jsx'
 
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AdminProductsProvider>
-    <AdminAuthProvider>
-      <SupplierAuthProvider>
+      <AdminAuthProvider>
+        <SupplierAuthProvider>
           <SoldItemsProvider>
-        <DebtsProvider>
-
-    <App />
-
-        </DebtsProvider>
+            <DebtsProvider>
+              <App />
+            </DebtsProvider>
           </SoldItemsProvider>
-      </SupplierAuthProvider>
-    </AdminAuthProvider>
+        </SupplierAuthProvider>
+      </AdminAuthProvider>
     </AdminProductsProvider>
-  </StrictMode>,
+  </StrictMode>
 )
+
 
           {/* mongodb password: 4iiOrna7DIbMVb2F */}

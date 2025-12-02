@@ -2,12 +2,14 @@ import React, { useState, useContext } from "react";
 import { LayoutDashboard, Package, PlusCircle, LogOut, BarChart2, Menu, X } from "lucide-react"; // Import Menu and X icons
 import ManageProducts from "./ManageProducts";
 import AddProduct from "./AddProduct";
+import Dashboard from "./Dashboard";
 import { useNavigate } from "react-router-dom";
 import { AdminAuthContext } from "../../Components/Context/AdminAuthProvider";
 import TotalSales from "./TotalSales";
 
+
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("manage");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar visibility
   const navigate = useNavigate();
   const { logout } = useContext(AdminAuthContext);
@@ -28,6 +30,7 @@ const AdminDashboard = () => {
   };
 
   const tabs = [
+    { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
     { key: "manage", label: "Manage Products", icon: <Package size={20} /> },
     { key: "add", label: "Add Product", icon: <PlusCircle size={20} /> },
     { key: "sales", label: "Total Sales", icon: <BarChart2 size={20} /> },
@@ -172,6 +175,7 @@ const AdminDashboard = () => {
 
             {/* Content Area */}
             <div className="w-full">
+              {activeTab === "dashboard" && <Dashboard/>}
               {activeTab === "manage" && <ManageProducts />}
               {activeTab === "add" && <AddProduct />}
               {activeTab === "sales" && <TotalSales />}

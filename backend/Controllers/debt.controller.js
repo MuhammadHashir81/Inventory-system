@@ -1,5 +1,8 @@
 import { Debt } from "../Models/debt.schema.js";
 import { SoldItem } from "../Models/soldItem.schema.js";
+
+
+
 export const getDebts = async (req, res) => {
   try {
     const debts = await Debt.find()
@@ -41,6 +44,7 @@ export const updatePayment = async (req, res) => {
 
     debt.paidAmount = parseFloat((debt.paidAmount + payment).toFixed(2));
     debt.remainingAmount = parseFloat((debt.totalAmount - debt.paidAmount).toFixed(2));
+
     debt.payments.push({ amount: payment });
 
     // Check if debt is cleared
@@ -84,6 +88,7 @@ export const updatePayment = async (req, res) => {
     }
   } catch (error) {
     console.error("Error updating payment:", error);
+    console.log(error)
     res.status(500).json({ 
       success: false, 
       message: "Error updating payment", 
