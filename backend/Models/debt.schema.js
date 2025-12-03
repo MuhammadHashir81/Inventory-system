@@ -5,7 +5,7 @@ const debtSchema = new mongoose.Schema({
   customerName: { type: String, required: true },
   shopName: { type: String },
   city: { type: String, default: "johrabad" },
-  
+
   // Array of products that have pending payment
   items: [
     {
@@ -17,18 +17,19 @@ const debtSchema = new mongoose.Schema({
       batchNo: { type: String },
     }
   ],
-  
+
   totalAmount: { type: Number, required: true },
   paidAmount: { type: Number, default: 0 },
   remainingAmount: { type: Number, required: true },
-  
+
   payments: [
     {
       amount: Number,
       date: { type: Date, default: Date.now },
     }
   ],
-  
+  licenseNo: { type: String, required: true },
+
   isCleared: { type: Boolean, default: false },
 }, { timestamps: true });
 

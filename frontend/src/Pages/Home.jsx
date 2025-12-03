@@ -46,6 +46,7 @@
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [batchNo, setBatchNo] = useState("");
+    const [licenseNo,setLicenseNo] = useState("")
 
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", message: "", onConfirm: null });
@@ -76,6 +77,7 @@
       setCity("johrabad");
       setBatchNo(product.batchNo || "");
       setIsModalOpen(true);
+      setLicenseNo("");
     };
 
     const closeModal = () => {
@@ -194,6 +196,7 @@
                 quantity: item.quantity,
                 batchNo: item.product.batchNo || "", // Get from product, not order level
               })),
+              licenseNo:licenseNo || "",
               paidAmount: totalPrice,
               customerName,
               shopName,
@@ -239,6 +242,7 @@
                 batchNo: item.product.batchNo || "", // Get from product, not order level
               })),
               paidAmount: paid,
+              licenseNo: licenseNo || "", // Get from product, not order level
               customerName,
               shopName,
               city,
@@ -415,7 +419,11 @@
                             <Typography variant="h6" className="font-bold text-blue-600 !text-xs">
                               Rs. {(product.price?.johrabad ?? 0).toLocaleString()}
                             </Typography>
+                            
                           </div>
+
+                          
+
                           <div className="flex items-center justify-between mb-1 pb-1 border-b border-blue-100">
                             <div className="flex items-center gap-2">
                               <MapPin className="w-3.5 h-3.5 text-indigo-600" />
@@ -425,6 +433,19 @@
                             </div>
                             <Typography variant="h6" className="font-bold text-indigo-600 !text-xs">
                               Rs. {(product.price?.other ?? 0).toLocaleString()}
+                            </Typography>
+                          </div>
+
+
+                          
+                           <div className="flex items-center justify-between ">
+                            <div className="flex items-center gap-2">
+                              <Typography variant="caption" className="text-gray-700 font-bold">
+                                Cost Price
+                              </Typography>
+                            </div>
+                            <Typography variant="h6" className="font-bold text-blue-600 !text-xs">
+                              Rs. {(product?.costPrice ?? 0).toLocaleString()}
                             </Typography>
                           </div>
                           <div className="flex items-center justify-between">
@@ -663,6 +684,21 @@
                   }}
                 />
 
+
+                <TextField
+                  label="License Number"
+                  fullWidth
+                  sx={{ mb: 2.5 }}
+                  value={licenseNo}
+                  onChange={(e) => setLicenseNo(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Package className="w-4 h-4 text-gray-500" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
                 {saleType === "partial" && (
                   <Fade in>
                     <TextField

@@ -79,6 +79,7 @@ const ManageProducts = () => {
       inventory: parseInt(selectedProduct.inventory),
       sold: parseInt(selectedProduct.sold),
       batchNo: selectedProduct.batchNo,
+      costPrice: selectedProduct.costPrice,
     });
     console.log("batchNo",selectedProduct.batchNo)
 
@@ -121,6 +122,7 @@ const ManageProducts = () => {
               <th className="px-4 sm:px-6 py-2">Stock</th>
               <th className="px-4 sm:px-6 py-2">Sold</th>
               <th className="px-4 sm:px-6 py-2">Bath no</th>
+              <th className="px-4 sm:px-6 py-2">Cost Price</th>
               <th className="px-4 sm:px-6 py-2 text-center rounded-tr-lg">Actions</th>
             </tr>
           </thead>
@@ -144,6 +146,7 @@ const ManageProducts = () => {
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.inventory}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.sold ?? 0}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.batchNo ?? 0}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.costPrice ?? 0}</td>
                 <td className="px-2 sm:px-6 py-2 text-center flex justify-center gap-2 sm:gap-3">
                   <button
                     className="text-blue-600 hover:text-blue-800 transition-all"
@@ -210,6 +213,15 @@ const ManageProducts = () => {
         <Box sx={style} className="max-h-[80vh] overflow-y-scroll">
           <Typography variant="h6" mb={2}>Edit Product</Typography>
           <Stack spacing={2}>
+
+           <TextField
+              label="Cost Price"
+              name="costPrice"
+              value={selectedProduct?.costPrice || 0}
+              onChange={handleChange}
+              fullWidth
+            />
+
             <TextField
               label="Name"
               name="name"
@@ -270,6 +282,7 @@ const ManageProducts = () => {
               onChange={handleChange}
               fullWidth
             />
+           
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button variant="outlined" onClick={closeEditModal}>Cancel</Button>
               <Button variant="contained" onClick={handleUpdate}>Update</Button>

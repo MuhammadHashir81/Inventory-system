@@ -4,7 +4,7 @@ import { Product } from "../Models/productSchema.js";
 // ➕ Add a new product
 export const adminAddProducts = async (req, res) => {
   try {
-    const { name, category, description, priceJohrabad, priceOther, inventory, batchNo, sold = 0 } = req.body;
+    const { name, category, description, priceJohrabad, priceOther, inventory, batchNo,costPrice , sold = 0 } = req.body;
 
     if (!name || !category || !description || priceJohrabad == null || priceOther == null || inventory == null) {
       return res.status(400).json({ message: "All fields are required" });
@@ -17,6 +17,7 @@ export const adminAddProducts = async (req, res) => {
       price: { johrabad: priceJohrabad, other: priceOther },
       inventory,
       batchNo,
+      costPrice,
       sold
     });
 
@@ -56,7 +57,7 @@ export const deleteOneAdminProduct = async (req, res) => {
 export const updateAdminProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, category, description, priceJohrabad, priceOther, inventory, sold,batchNo } = req.body;
+    const { name, category, description, priceJohrabad, priceOther, inventory, sold,batchNo,costPrice } = req.body;
 
     const updated = await Product.findByIdAndUpdate(
       id,
@@ -67,6 +68,7 @@ export const updateAdminProduct = async (req, res) => {
         price: { johrabad: priceJohrabad, other: priceOther },
         inventory,
         sold,
+        costPrice,
         batchNo
       },
       { new: true, runValidators: true }

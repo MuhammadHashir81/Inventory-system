@@ -13,14 +13,17 @@ const AddProduct = () => {
     category: "",
     description: "",
     inventory: "",
-    batchNo:""
-
-
+    batchNo:"",
+    costPrice:""
   });
+
+
+  console.log(product.costPrice)
 
 
   const handleChange = (e) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
+    console.log(e.target.name)
   };
 
 
@@ -35,7 +38,8 @@ const AddProduct = () => {
       !product.priceJohrabad ||
       !product.priceOther ||
       !product.inventory ||
-      !product.batchNo
+      !product.batchNo || 
+      !product.costPrice
     ) {
       toast.error("All fields are required");
       return;
@@ -58,6 +62,7 @@ const AddProduct = () => {
         category: "",
         description: "",
         inventory: "",
+        costPrice:""
       });
     } else {
       toast.error(result.message || "Failed to add product");
@@ -146,6 +151,18 @@ const AddProduct = () => {
             />
           </div>
 
+
+          <div className="flex flex-col sm:col-span-2">
+            <label className="text-gray-700 font-medium mb-1 sm:mb-2">Cost Price</label>
+            <input
+              type="number"
+              name="costPrice"
+              placeholder="cost price"
+              value={product.costPrice}
+              onChange={handleChange}
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
           <div className="flex flex-col sm:col-span-2">
             <label className="text-gray-700 font-medium mb-1 sm:mb-2">Batch no</label>

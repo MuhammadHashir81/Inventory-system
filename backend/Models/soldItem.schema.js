@@ -6,7 +6,7 @@ const soldItemSchema = new mongoose.Schema({
   shopName: { type: String },
   city: { type: String, default: "johrabad" },
   type: { type: String, enum: ["full", "partial"], required: true },
-  
+
   // Array of products in this order
   items: [
     {
@@ -21,7 +21,9 @@ const soldItemSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true }, // Sum of all itemTotal
   paidAmount: { type: Number, default: 0 },
   remainingAmount: { type: Number, default: 0 },
+  licenseNo: { type: String, required: true },
   isDebtCleared: { type: Boolean, default: false },
+
 }, { timestamps: true });
 
 export const SoldItem = mongoose.model("SoldItem", soldItemSchema);

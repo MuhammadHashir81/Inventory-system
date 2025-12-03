@@ -24,7 +24,7 @@ const TotalSales = () => {
   const [shopSearchInput, setShopSearchInput] = useState("");
   const [productSearchInput, setProductSearchInput] = useState("");
 
-  const handleClickOpen = () => { 
+  const handleClickOpen = () => {
     setDeleteOpen(true);
   };
 
@@ -34,11 +34,11 @@ const TotalSales = () => {
 
   const monthlyProfits = useMemo(() => {
     const profits = {};
-    
+
     soldItems.forEach(item => {
       const date = new Date(item.createdAt || item.date || Date.now());
       const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      
+
       if (!profits[monthYear]) {
         profits[monthYear] = {
           totalSales: 0,
@@ -47,13 +47,13 @@ const TotalSales = () => {
           count: 0
         };
       }
-      
+
       profits[monthYear].totalSales += item.totalAmount || 0;
       profits[monthYear].totalPaid += item.paidAmount || 0;
       profits[monthYear].totalRemaining += item.remainingAmount || 0;
       profits[monthYear].count += 1;
     });
-    
+
     return profits;
   }, [soldItems]);
 
@@ -73,12 +73,12 @@ const TotalSales = () => {
     });
 
     if (searchType === "shop" && searchQuery) {
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.shopName?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     } else if (searchType === "product" && searchQuery) {
       filtered = filtered.filter(item =>
-        item.items?.some(product => 
+        item.items?.some(product =>
           product.productName?.toLowerCase().includes(searchQuery.toLowerCase())
         )
       );
@@ -129,14 +129,14 @@ const TotalSales = () => {
 
   const filteredShops = useMemo(() => {
     if (!shopSearchInput) return [];
-    return uniqueShops.filter(shop => 
+    return uniqueShops.filter(shop =>
       shop.toLowerCase().includes(shopSearchInput.toLowerCase())
     );
   }, [shopSearchInput, uniqueShops]);
 
   const filteredProducts = useMemo(() => {
     if (!productSearchInput) return [];
-    return uniqueProducts.filter(product => 
+    return uniqueProducts.filter(product =>
       product.toLowerCase().includes(productSearchInput.toLowerCase())
     );
   }, [productSearchInput, uniqueProducts]);
@@ -159,7 +159,7 @@ const TotalSales = () => {
     setEditingInvoice(item._id);
     setInvoiceData({
       ...item,
-      items: item.items?.map(p => ({...p})) || []
+      items: item.items?.map(p => ({ ...p })) || []
     });
   };
 
@@ -190,10 +190,10 @@ const TotalSales = () => {
         }
         return item;
       }) || [];
-      
+
       const newTotal = updatedItems.reduce((sum, item) => sum + (item.itemTotal || 0), 0);
       const newRemaining = Math.max(0, newTotal - (prev.paidAmount || 0));
-      
+
       return {
         ...prev,
         items: updatedItems,
@@ -249,7 +249,7 @@ const TotalSales = () => {
       const updatedItems = prev.items?.filter((_, i) => i !== index) || [];
       const newTotal = updatedItems.reduce((sum, item) => sum + (item.itemTotal || 0), 0);
       const newRemaining = Math.max(0, newTotal - (prev.paidAmount || 0));
-      
+
       return {
         ...prev,
         items: updatedItems,
@@ -263,7 +263,7 @@ const TotalSales = () => {
     const paidAmount = parseFloat(value) || 0;
     const totalAmount = invoiceData.totalAmount || 0;
     const remaining = Math.max(0, totalAmount - paidAmount);
-    
+
     setInvoiceData(prev => ({
       ...prev,
       paidAmount: paidAmount,
@@ -443,7 +443,7 @@ const TotalSales = () => {
       <div class="header">
         <div class="pharmacy-name">CITY PHARMACY</div>
         <div class="tagline">Your Trusted Healthcare Partner</div>
-        <div class="contact">Contact: +92 300 8706962</div>
+        <div class="contact">Contact: +92 335 3234837</div>
       </div>
 
       <div class="invoice-title">INVOICE</div>
@@ -497,6 +497,10 @@ const TotalSales = () => {
           <span>Amount Due:</span>
           <span>Rs. ${dataToUse.remainingAmount.toFixed(2)}</span>
         </div>
+        <div class="summary-row total">
+          <span>License Number:</span>
+          <span>Rs. ${dataToUse.licenseNo}</span>
+        </div>
       </div>
 
       <div style="text-align: center;">
@@ -527,30 +531,30 @@ const TotalSales = () => {
   if (soldItems.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex items-center justify-center">
-          <div>
-        <Dialog
-          open={deleteOpen}
-          onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">
-            {"Use Google's location service?"}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Let Google help apps determine location. This means sending anonymous
-              location data to Google, even when no apps are running.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>cancel</Button>
-            <Button onClick={handleClose} autoFocus>
-              delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
+        <div>
+          <Dialog
+            open={deleteOpen}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {"Use Google's location service?"}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Let Google help apps determine location. This means sending anonymous
+                location data to Google, even when no apps are running.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>cancel</Button>
+              <Button onClick={handleClose} autoFocus>
+                delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
 
         <div className="text-center bg-white rounded-2xl shadow-lg p-12 max-w-md">
           <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -635,8 +639,8 @@ const TotalSales = () => {
                           value={availableProducts.find(p => p.name === product.productName) || null}
                           onChange={(e, newValue) => selectProductForInvoice(index, newValue)}
                           renderInput={(params) => (
-                            <TextField 
-                              {...params} 
+                            <TextField
+                              {...params}
                               placeholder="Search and select product..."
                               sx={{
                                 '& .MuiOutlinedInput-root': {
@@ -1037,7 +1041,7 @@ const TotalSales = () => {
         {/* Sales Items Grid */}
         <div className="space-y-4">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900">Sales Transactions</h3>
-          
+
           {filteredSales.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-200 p-8 sm:p-12 text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1061,11 +1065,10 @@ const TotalSales = () => {
                             {item.shopName}
                           </p>
                         )}
-                        <span className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-full text-xs font-semibold ${
-                          item.isDebtCleared 
-                            ? "bg-green-100 text-green-700" 
+                        <span className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.isDebtCleared
+                            ? "bg-green-100 text-green-700"
                             : "bg-orange-100 text-orange-700"
-                        }`}>
+                          }`}>
                           {item.isDebtCleared ? "✓ Paid" : "⏳ Pending"}
                         </span>
                       </div>
@@ -1087,7 +1090,7 @@ const TotalSales = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Card Body */}
                   <div className="p-4 sm:p-5 space-y-3">
                     <div className="flex justify-between items-center text-xs sm:text-sm">
@@ -1104,13 +1107,12 @@ const TotalSales = () => {
                         <span className="text-xs sm:text-sm font-semibold text-gray-700">
                           Products ({item.items?.length || 0})
                         </span>
-                        <ChevronDown 
-                          className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-transform ${
-                            expandedSale === item._id ? "rotate-180" : ""
-                          }`}
+                        <ChevronDown
+                          className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-transform ${expandedSale === item._id ? "rotate-180" : ""
+                            }`}
                         />
                       </button>
-                      
+
                       {expandedSale === item._id && (
                         <div className="px-3 pb-3 space-y-2">
                           {item.items?.map((product, index) => (
@@ -1154,6 +1156,12 @@ const TotalSales = () => {
                         </span>
                       </div>
 
+                      <div className="flex justify-between items-center text-xs sm:text-sm">
+                        <span className="text-gray-700 font-medium">License Number</span>
+                        <span className="font-bold text-gray-600">
+                           {item.licenseNo || 'N/A'}
+                        </span>
+                      </div>
                       <div className="flex justify-between items-center text-xs sm:text-sm pt-2 border-t border-gray-300">
                         <span className="text-orange-700 font-medium">Remaining</span>
                         <span className="font-bold text-orange-600">

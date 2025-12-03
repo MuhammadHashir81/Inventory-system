@@ -8,6 +8,7 @@ const productSchema = new mongoose.Schema({
     johrabad: { type: Number, required: true },
     other: { type: Number, required: true },
   },
+  costPrice:{type:Number},
   inventory: { type: Number, required: true }, // total inventory (initial stock)
   batchNo: { type: String },
   sold: { type: Number, default: 0 }, // number of items sold

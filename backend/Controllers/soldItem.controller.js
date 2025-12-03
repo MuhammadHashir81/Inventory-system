@@ -12,10 +12,11 @@ export const sellProducts = async (req, res) => {
       customerName,
       shopName,
       city,
+      licenseNo,
     } = req.body;
     
     
-    if (!items || items.length === 0 || !type || !customerName) {
+    if (!items || items.length === 0 || !type || !customerName || !licenseNo) {
       console.log("Validation failed - Missing fields");
       return res.status(400).json({ 
         success: false, 
@@ -60,6 +61,7 @@ export const sellProducts = async (req, res) => {
         pricePerUnit,
         itemTotal,
         batchNo: item.batchNo || "N/A", // Get batchNo from request
+        
       });
 
       // Update product inventory
@@ -83,6 +85,7 @@ export const sellProducts = async (req, res) => {
       paidAmount: paid,
       remainingAmount,
       isDebtCleared: remainingAmount === 0,
+      licenseNo,
     });
 
     // If partial payment, create Debt record
@@ -98,6 +101,7 @@ export const sellProducts = async (req, res) => {
         remainingAmount,
         payments: paid > 0 ? [{ amount: paid, date: new Date() }] : [],
         isCleared: false,
+        licenseNo,
       });
     }
 
