@@ -3,23 +3,38 @@ import axios from "axios";
 
 export const AdminProductsContext = createContext();
 
- const AdminProductsProvider = ({ children }) => {
+const AdminProductsProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [getLowStockProducts, setLowStockProducts] = useState([]);
+  const [totalPages,setTotalPages] = useState(1)
+  
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
-const apiUrl = import.meta.env.VITE_BACKEND_URL
+  // Get low products with pagination
+  const lowProducts = async (page = 1, limit = 3) => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/admin/products/low-stock-products?page=${page}&limit=${limit}`);
+      setLowStockProducts(response.data.getProducts);
+      setTotalPages(response.data.totalPages)
+
+      console.log("these are total pages ",totalPages)
+      console.log("these are low stock products", response.data.getProducts);
+    } catch (error) {
+      console.error("Error fetching low stock products:", error);
+    }
+  };
 
   // Fetch all products
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${apiUrl}/api/admin/products/get`);
-      console.log(res.data.products)
+      console.log(res.data.products);
       if (res.data.products) {
         setProducts(res.data.products);
       }
-
-      return res.data.products
+      return res.data.products;
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -32,7 +47,6 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL
     try {
       const res = await axios.post(`${apiUrl}/api/sold-items/sell`, orderData);
       if (res.data.success) {
-        // Refresh products after sale
         await fetchProducts();
       }
       return res.data;
@@ -51,11 +65,10 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL
       const res = await axios.post(`${apiUrl}/api/admin/products/add`, productData);
       if (res.data.success) {
         await fetchProducts();
-       
       }
       return {
         success: true
-      }
+      };
     } catch (error) {
       console.error("Error adding product:", error);
       return { 
@@ -113,6 +126,9 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL
         addProduct,
         updateProduct,
         deleteProduct,
+        lowProducts,
+        getLowStockProducts,
+        totalPages
       }}
     >
       {children}
@@ -120,4 +136,4 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL
   );
 };
 
-export default AdminProductsProvider
+export default AdminProductsProvider;

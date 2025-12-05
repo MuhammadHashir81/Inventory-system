@@ -8,6 +8,9 @@ export const SoldItemsContext = createContext();
 const SoldItemsProvider = ({ children }) => {
   const [soldItems, setSoldItems] = useState([]);
 
+
+
+  // fetch sold items
   const fetchSoldItems = async () => {
     try {
       const res = await axios.get(`${apiUrl}/api/sold-items/get`);
@@ -20,6 +23,10 @@ const SoldItemsProvider = ({ children }) => {
     }
   };
 
+
+
+
+  //add sold items
   const addSoldItem = async (item) => {
     try {
       const res = await axios.post(`${apiUrl}/api/sold-items/add`, item);
@@ -30,8 +37,11 @@ const SoldItemsProvider = ({ children }) => {
       console.error("Add sold item error:", error);
       return { success: false, message: "Server error" };
     }
+  
+  
   };
 
+  // delete sold items
   const deleteSoldItems = async (id) => {
     try {
       const res = await axios.get(`${apiUrl}/api/sold-items/delete/${id}`);

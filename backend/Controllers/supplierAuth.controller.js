@@ -23,7 +23,7 @@ export const seedSupplier = async () => {
     console.log("⚙️ Supplier already exists");
   }
 };
-seedSupplier();
+
 
 // Supplier Login
 export const supplierLogin = async (req, res) => {

@@ -9,6 +9,7 @@ import { adminProductsRouter } from './Routes/adminProducts.route.js';
 import { supplierAuthRouter } from './Routes/supplierAuth.route.js';
 import { soldItemRouter } from './Routes/soldItem.route.js';
 import { debtRouter } from './Routes/debt.route.js';
+import { seedSupplier } from './Controllers/supplierAuth.controller.js';
 configDotenv()
 const app = express()
 const port = process.env.PORT || 3005
@@ -33,8 +34,7 @@ try {
 
 
   await seedAdmin();
-
-
+  await seedSupplier()
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })

@@ -83,3 +83,39 @@ export const updateAdminProduct = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+
+// get low stock products 
+export const getLowStockProducts = async (req, res) => {
+  try {
+    let page = Number(req.query.page) || 1
+    let limit = Number(req.query.limit) || 3
+    let skip = (page - 1) * limit 
+
+    // Get total count of low stock products
+    const totalCount = await Product.countDocuments({ inventory: { $lt: 5 } })
+    console.log("this is total count",totalCount)
+    
+    // Get paginated products
+    const getProducts = await Product.find({ inventory: { $lt: 10 } })
+      .skip(skip)
+      .limit(limit)
+      console.log(getProducts)
+      console.log(getProducts.length)
+
+
+    res.status(200).json({
+      success: true,
+      getProducts,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+
+    })
+
+
+
+  } catch (error) {
+    console.error("Error fetching low stock products:", error)
+    res.status(500).json({ error: "Internal server error" })
+  }
+}
