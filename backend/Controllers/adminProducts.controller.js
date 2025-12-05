@@ -93,7 +93,7 @@ export const getLowStockProducts = async (req, res) => {
     let skip = (page - 1) * limit 
 
     // Get total count of low stock products
-    const totalCount = await Product.countDocuments({ inventory: { $lt: 5 } })
+    const totalCount = await Product.countDocuments({ inventory: { $lt: 10 } })
     console.log("this is total count",totalCount)
     
     // Get paginated products
