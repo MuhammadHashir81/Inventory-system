@@ -74,6 +74,7 @@ export const verifySupplier = async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.SUPPLIER_LOGIN_SECRET_KEY);
     const supplier = await SupplierAuth.findById(decoded.id).select("-password");
+  
     if (!supplier) return res.status(401).json({ error: "Invalid token" });
 
     res.status(200).json({ success: true, supplier });

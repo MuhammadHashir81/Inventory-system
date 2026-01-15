@@ -6,23 +6,10 @@ export const DebtsContext = createContext();
 
 const DebtsProvider = ({ children }) => {
   const [debts, setDebts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const { fetchSoldItems } = useContext(SoldItemsContext);
 
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
-  // Fetch all debts
-  const fetchDebts = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${apiUrl}/api/debts/get`);
-      console.log(res.data)
-      if (res.data.debts) setDebts(res.data.debts);
-    } catch (error) {
-      console.error("Error fetching debts:", error);
-    }
-    setLoading(false);
-  };
 
   // Make payment
   const makePayment = async (id, paymentAmount) => {
@@ -67,13 +54,12 @@ const DebtsProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    fetchDebts();
-  }, []);
+ 
+
 
   return (
     <DebtsContext.Provider
-      value={{ debts, loading, fetchDebts, makePayment, deleteDebt }}
+      value={{ debts, makePayment, deleteDebt,setDebts   }}
     >
       {children}
     </DebtsContext.Provider>

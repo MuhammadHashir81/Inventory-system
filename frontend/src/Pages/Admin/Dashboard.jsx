@@ -61,6 +61,7 @@ const Dashboard = () => {
     const loadProducts = async () => {
       const data = await fetchProducts();
       const lowStock = data.filter(item => item.inventory < 10);
+      console.log(lowStock)
       setLowStockProducts(lowStock);
     };
 
@@ -163,7 +164,7 @@ useEffect(() => {
           </div>
 
           <div className='flex-1'>
-            {isLoadingLowStock ? (
+            {isLoadingLowStock ? (  
               <div className='flex items-center justify-center h-full'>
                 <p className='text-gray-500'>Loading...</p>
               </div>

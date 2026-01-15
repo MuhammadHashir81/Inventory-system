@@ -1,30 +1,75 @@
-import React, { useContext, useState, useMemo } from "react";
+import React, { useContext, useState, useMemo, useEffect } from "react";
 import { DebtsContext } from "../Components/Context/DebtsProvider";
 import toast from "react-hot-toast";
 import { Toaster } from "react-hot-toast";
-
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import axios from "axios";
 const Debts = () => {
-  const { debts, loading, makePayment } = useContext(DebtsContext);
+  const { debts, setDebts, makePayment } = useContext(DebtsContext);
   const [paymentInput, setPaymentInput] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [queryDebts, setQueryDebts] = useState("")
+  const [currentDebtPage, setCurrentDebtPage] = useState(1)
+  const [totalDebtPages, setTotalDebtPages] = useState(1)
+  const [loading,setLoading] = useState(true)
+
   const [expandedDebt, setExpandedDebt] = useState(null);
 
 
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
+
+
+  useEffect(()=>{
+
+  const fetchDebts = async (page = 1, limit = 1) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${apiUrl}/api/debts/get?page=${page}&limit=${limit}`);
+      console.log(res.data)
+      setTotalDebtPages(res.data.totalPages)
+      if (res.data.debts) setDebts(res.data.debts);
+    } catch (error) {
+      console.error("Error fetching debts:", error);
+    }
+    setLoading(false);
+  };
+
+  fetchDebts()
+  },[currentDebtPage])
+
+
+  const handleNextPage = ()=>{
+    setCurrentDebtPage(prev => prev+1)
+
+  }
+
+  const handlePreviousPage = ()=>{
+    setCurrentDebtPage(prev => prev-1)
+  }
+
+
+
   // Filter debts based on search query
-  const filteredDebts = useMemo(() => {
-    if (!searchQuery.trim()) return debts;
-    
-    const query = searchQuery.toLowerCase().trim();
-    return debts.filter(debt => {
-      const customerName = (debt.customerName || "").toLowerCase();
-      const shopName = (debt.shopName || "").toLowerCase();
-      const hasMatchingProduct = debt.items?.some(item => 
-        (item.productName || "").toLowerCase().includes(query)
-      );
-      
-      return customerName.includes(query) || shopName.includes(query) || hasMatchingProduct;
-    });
-  }, [debts, searchQuery]);
+  useEffect(() => {
+    const searhedDebts = async () => {
+      const res = await fetch(`${apiUrl}/api/debts/search?q=${searchQuery}`);
+      const data = await res.json()
+      setQueryDebts(data.items)
+    }
+
+    const timer = setTimeout(() => {
+      searhedDebts()
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+    }
+
+
+  }, [searchQuery])
+
+  const filteredDebts = searchQuery ? queryDebts : debts
+
 
   if (loading) {
     return (
@@ -33,6 +78,7 @@ const Debts = () => {
       </div>
     );
   }
+
 
   if (debts.length === 0) {
     return (
@@ -56,7 +102,7 @@ const Debts = () => {
       toast.error("Please enter a valid amount");
       return;
     }
-    
+
     const res = await makePayment(id, amount);
     if (res.success) {
       toast.success("Payment updated successfully!");
@@ -73,23 +119,23 @@ const Debts = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="container mx-auto max-w-7xl">
-        <Toaster/>
+        <Toaster />
         <h1 className="text-4xl font-bold mb-10 text-center text-gray-800">Customer Debts Overview</h1>
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-8">
           <div className="relative">
-            <svg 
+            <svg
               className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-              fill="none" 
-              stroke="currentColor" 
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="text"
-              placeholder="Search by customer, shop, or product name..."
+              placeholder="Search by customer or by shop name..."
               className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -142,9 +188,8 @@ const Debts = () => {
                   )}
                   <div className="flex items-center justify-between mt-3">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                        debt.isCleared ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
-                      }`}
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${debt.isCleared ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
+                        }`}
                     >
                       {debt.isCleared ? "✓ Paid" : "⏳ Pending"}
                     </span>
@@ -157,25 +202,24 @@ const Debts = () => {
                 <div className="p-6 space-y-3">
                   {/* Products List */}
                   <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                    <div 
+                    <div
                       className="flex items-center justify-between cursor-pointer"
                       onClick={() => toggleExpand(debt._id)}
                     >
                       <h3 className="text-sm font-semibold text-gray-700">
                         Products ({debt.items?.length || 0})
                       </h3>
-                      <svg 
-                        className={`w-5 h-5 text-gray-500 transition-transform ${
-                          expandedDebt === debt._id ? "rotate-180" : ""
-                        }`}
-                        fill="none" 
-                        stroke="currentColor" 
+                      <svg
+                        className={`w-5 h-5 text-gray-500 transition-transform ${expandedDebt === debt._id ? "rotate-180" : ""
+                          }`}
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
-                    
+
                     {expandedDebt === debt._id && (
                       <div className="mt-3 space-y-2">
                         {debt.items?.map((item, index) => (
@@ -208,8 +252,8 @@ const Debts = () => {
                   <div className="flex justify-between items-center border-t border-gray-100 pt-2">
                     <span className="text-sm text-gray-500">Remaining</span>
                     <span className="font-semibold text-red-600">Rs. {debt.remainingAmount.toFixed(2)}</span>
-                    
-                    
+
+
                   </div>
 
                   {!debt.isCleared && (
@@ -240,6 +284,33 @@ const Debts = () => {
             ))}
           </div>
         )}
+      </div>
+      {/* next and previous button */}
+      <div className="flex justify-center gap-4 text-blue-500 ">
+        <button
+        onClick={handlePreviousPage}
+          disabled={currentDebtPage === 1}
+          className={`flex   px-3 py-2 rounded-md ${currentDebtPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200'}`}
+        >
+          <ChevronLeft />
+          <span className="font-medium">previous</span>
+
+
+        </button>
+        <p>{currentDebtPage} of {totalDebtPages}</p>
+
+        <button
+        onClick={handleNextPage}
+          disabled={currentDebtPage === totalDebtPages}
+          className={`flex px-3 py-2 rounded-md ${currentDebtPage === totalDebtPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200'}`}
+        >
+          <span className="font-medium">Next</span>
+
+          <ChevronRight />
+
+        </button>
+
+
       </div>
     </div>
   );

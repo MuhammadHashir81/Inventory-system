@@ -35,15 +35,15 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="admin-login" element={<AdminLogin />} />
 
-        {/* Admin Dashboard */}
-        <Route
+         {/* Admin Dashboard */}
+         <Route
           path="/admin/dashboard"
           element={
             <ProtectedRoute>
               <AdminDashboard />
             </ProtectedRoute>
           }
-        >
+        > 
           <Route index element={<ManageProducts />} />
         </Route>
       </Routes>

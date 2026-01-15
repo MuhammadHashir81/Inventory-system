@@ -18,13 +18,11 @@ const AddProduct = () => {
   });
 
 
-  console.log(product.costPrice)
 
 
   const handleChange = (e) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
-    console.log(e.target.name)
-  };
+    };
 
 
 

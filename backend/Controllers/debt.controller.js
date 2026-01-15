@@ -4,21 +4,34 @@ import { SoldItem } from "../Models/soldItem.schema.js";
 
 
 export const getDebts = async (req, res) => {
+  let page = req.query.page
+  let limit = req.query.limit
+  let skip = (page - 1) * limit
+
   try {
+
+    const totalCounts = await Debt.countDocuments()
+
+    const totalPages = Math.ceil(totalCounts / limit)
     const debts = await Debt.find()
       .sort({ createdAt: -1 })
-      .populate("items.productId", "name");
-    
-    res.status(200).json({ 
-      success: true, 
-      debts 
+      .populate("items.productId", "name")
+      .skip(skip)
+      .limit(limit)
+
+    res.status(200).json({
+      success: true,
+      debts,
+      totalCounts,
+      totalPages
     });
+
   } catch (error) {
     console.error("Error fetching debts:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error fetching debts", 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: "Error fetching debts",
+      error: error.message
     });
   }
 };
@@ -31,9 +44,9 @@ export const updatePayment = async (req, res) => {
 
     const debt = await Debt.findById(id);
     if (!debt) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Debt not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Debt not found"
       });
     }
 
@@ -63,7 +76,7 @@ export const updatePayment = async (req, res) => {
 
       // Delete the debt record
       await Debt.findByIdAndDelete(id);
-      
+
       return res.status(200).json({
         success: true,
         message: "Payment completed & debt removed",
@@ -79,20 +92,20 @@ export const updatePayment = async (req, res) => {
       }
 
       await debt.save();
-      
-      res.status(200).json({ 
-        success: true, 
-        message: "Payment updated", 
-        debt 
+
+      res.status(200).json({
+        success: true,
+        message: "Payment updated",
+        debt
       });
     }
   } catch (error) {
     console.error("Error updating payment:", error);
     console.log(error)
-    res.status(500).json({ 
-      success: false, 
-      message: "Error updating payment", 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: "Error updating payment",
+      error: error.message
     });
   }
 };
@@ -102,11 +115,11 @@ export const deleteDebt = async (req, res) => {
   try {
     const { id } = req.params;
     const debt = await Debt.findById(id);
-    
+
     if (!debt) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Debt not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Debt not found"
       });
     }
 
@@ -118,17 +131,31 @@ export const deleteDebt = async (req, res) => {
     }
 
     await Debt.findByIdAndDelete(id);
-    
-    res.status(200).json({ 
-      success: true, 
-      message: "Debt deleted successfully" 
+
+    res.status(200).json({
+      success: true,
+      message: "Debt deleted successfully"
     });
   } catch (error) {
     console.error("Error deleting debt:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error deleting debt", 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: "Error deleting debt",
+      error: error.message
     });
   }
 };
+
+
+  export const getSearchedDebts = async(req,res) => {
+    const {q} = req.query;
+    if(!q) return ([]);
+
+
+    const items =await Debt.find({$or: [
+    { customerName: { $regex: q, $options: 'i' } },
+    { shopName: { $regex: q, $options: 'i' } }
+  ]
+}).limit(10)
+    res.status(200).json({items})
+  }

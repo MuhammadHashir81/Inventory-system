@@ -1,8 +1,10 @@
 // ManageProducts.jsx
 import React, { useState, useContext, useEffect } from "react";
-import { Search, Pencil, Trash2 } from "lucide-react";
+import { Search, Pencil, Trash2,Plus } from "lucide-react";
 import { AdminProductsContext } from "../../Components/Context/AdminProductsProvider";
 import { Modal, Box, Typography, TextField, Button, Stack } from "@mui/material";
+import toast, { Toaster } from "react-hot-toast";
+
 
 const style = {
   position: "absolute",
@@ -16,13 +18,31 @@ const style = {
   p: 4,
 };
 
+
+
 const ManageProducts = () => {
-  const { products, fetchProducts, deleteProduct, updateProduct } = useContext(AdminProductsContext);
+  const { products, fetchProducts, deleteProduct, updateProduct,addProduct } = useContext(AdminProductsContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddProductModalOpen,setIsAddProductOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+   const [product, setProduct] = useState({
+      name: "",
+      priceJohrabad: "",
+      priceOther: "",
+      category: "",
+      description: "",
+      inventory: "",
+      batchNo:"",
+      costPrice:""
+    });
+
+
+
+
+    
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -32,6 +52,18 @@ const ManageProducts = () => {
   );
 
   // --- Modals ---
+
+
+
+  const openAddProductModal = ()=>{
+    setIsAddProductOpen(true)
+  }
+
+  const closeAddProductModal = ()=>{
+    setIsAddProductOpen(false)
+  }
+
+
   const openEditModal = (product) => {
     console.log(product.batchNo)
     setSelectedProduct({
@@ -95,9 +127,9 @@ const ManageProducts = () => {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row  sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4 ">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Products</h2>
-        <div className="relative w-full sm:w-64 sm:ml-auto">
+        <div className="relative w-full sm:w-64 sm:ml-auto ">
           <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
           <input
             type="text"
@@ -106,6 +138,11 @@ const ManageProducts = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </div>
+        <div className="ml-10">
+          {/* <button onClick={openAddProductModal} className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-md">
+             <Plus /> 
+             add product</button> */}
         </div>
       </div>
 
@@ -207,6 +244,91 @@ const ManageProducts = () => {
           No products found matching “{searchTerm}”
         </div>
       )}
+
+      {/*  add prdudct modal */}
+
+
+<Modal open={isAddProductModalOpen} onClose={closeAddProductModal}>
+        <Box sx={style} className="max-h-[80vh] overflow-y-scroll">
+          <Typography variant="h6" mb={2}>Add Product</Typography>
+          <Stack spacing={2}>
+
+           <TextField
+              label="Cost Price"
+              name="costPrice"
+              value={selectedProduct?.costPrice || 0}
+              onChange={handleChange}
+              fullWidth
+            />
+
+            <TextField
+              label="Name"
+              name="name"
+              value={selectedProduct?.name || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Category"
+              name="category"
+              value={selectedProduct?.category || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Description"
+              name="description"
+              value={selectedProduct?.description || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Price (Johrabad)"
+              name="priceJohrabad"
+              type="number"
+              value={selectedProduct?.priceJohrabad || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Price (Other Cities)"
+              name="priceOther"
+              type="number"
+              value={selectedProduct?.priceOther || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Inventory"
+              name="inventory"
+              type="number"
+              value={selectedProduct?.inventory || ""}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Sold"
+              name="sold"
+              type="number"
+              value={selectedProduct?.sold || 0}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              label="Batch no"
+              name="batchNo"
+              value={selectedProduct?.batchNo || 0}
+              onChange={handleChange}
+              fullWidth
+            />
+           
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button variant="outlined" onClick={closeEditModal}>Cancel</Button>
+              <Button variant="contained" onClick={handleUpdate}>add product</Button>
+            </Stack>
+          </Stack>
+        </Box>
+      </Modal>
 
       {/* Edit Modal */}
       <Modal open={isEditModalOpen} onClose={closeEditModal}>

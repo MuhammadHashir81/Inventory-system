@@ -1,59 +1,59 @@
-import express from 'express'
-import { adminAuthRouter } from './Routes/adminAuth.route.js';
-import mongoose from 'mongoose';
-import { seedAdmin } from './Controllers/adminAuth.controller.js';
-import cookieParser from "cookie-parser";
-import { configDotenv } from 'dotenv';
-import cors from 'cors' 
-import { adminProductsRouter } from './Routes/adminProducts.route.js';
-import { supplierAuthRouter } from './Routes/supplierAuth.route.js';
-import { soldItemRouter } from './Routes/soldItem.route.js';
-import { debtRouter } from './Routes/debt.route.js';
-import { seedSupplier } from './Controllers/supplierAuth.controller.js';
-configDotenv()
-const app = express()
-const port = process.env.PORT || 3005
+  import express from 'express'
+  import { adminAuthRouter } from './Routes/adminAuth.route.js';
+  import mongoose from 'mongoose';
+  import { seedAdmin } from './Controllers/adminAuth.controller.js';
+  import cookieParser from "cookie-parser";
+  import { configDotenv } from 'dotenv';
+  import cors from 'cors' 
+  import { adminProductsRouter } from './Routes/adminProducts.route.js';
+  import { supplierAuthRouter } from './Routes/supplierAuth.route.js';
+  import { soldItemRouter } from './Routes/soldItem.route.js';
+  import { debtRouter } from './Routes/debt.route.js';
+  import { seedSupplier } from './Controllers/supplierAuth.controller.js';
+  configDotenv()
+  const app = express()
+  const port = process.env.PORT || 3005
 
 
-app.use(express.json());
-app.use(cors({
-  origin: process.env.FRONTEND_URL.replace(/\/$/, ""), // removes trailing slash if any
-  credentials: true,
-}));
+  app.use(express.json());
+  app.use(cors({
+    origin: process.env.FRONTEND_URL.replace(/\/$/, ""), // removes trailing slash if any
+    credentials: true,
+  }));
 
 
 
-app.use(cookieParser());
+  app.use(cookieParser());
 
 
-try {
-  await mongoose.connect(process.env.MONGO_URI);
-} catch (error) {
-    console.log(error)
-}
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+  } catch (error) {
+      console.log(error)
+  }
 
 
-  await seedAdmin();
-  await seedSupplier()
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+    await seedAdmin();
+    await seedSupplier()
+  app.get('/', (req, res) => {
+    res.send('Hello World!')
+  })
 
-// supplier routes
-app.use('/api/supplier',supplierAuthRouter)
-
-
-// debt routes
-app.use('/api/debts',debtRouter)
-
-// sold items
-app.use('/api/sold-items',soldItemRouter)
+  // supplier routes
+  app.use('/api/supplier',supplierAuthRouter)
 
 
-// admin routes
-app.use('/api/admin',adminAuthRouter)
-app.use('/api/admin/products',adminProductsRouter)
+  // debt routes
+  app.use('/api/debts',debtRouter)
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  // sold items
+  app.use('/api/sold-items',soldItemRouter)
+
+
+  // admin routes
+  app.use('/api/admin',adminAuthRouter)
+  app.use('/api/admin/products',adminProductsRouter)
+
+  app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+  })
