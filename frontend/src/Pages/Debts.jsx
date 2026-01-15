@@ -21,7 +21,7 @@ const Debts = () => {
 
   useEffect(()=>{
 
-  const fetchDebts = async (page = 1, limit = 1) => {
+  const fetchDebts = async (page = 1, limit = 10) => {
     setLoading(true);
     try {
       const res = await axios.get(`${apiUrl}/api/debts/get?page=${page}&limit=${limit}`);
