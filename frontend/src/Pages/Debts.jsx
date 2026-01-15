@@ -286,7 +286,7 @@ const Debts = () => {
         )}
       </div>
       {/* next and previous button */}
-      <div className="flex justify-center gap-4 text-blue-500 ">
+      <div className="flex justify-center items-center gap-4 text-blue-500 ">
         <button
         onClick={handlePreviousPage}
           disabled={currentDebtPage === 1}
@@ -297,7 +297,7 @@ const Debts = () => {
 
 
         </button>
-        <p>{currentDebtPage} of {totalDebtPages}</p>
+        <h4>Page {currentDebtPage} of  {totalDebtPages}</h4>
 
         <button
         onClick={handleNextPage}
