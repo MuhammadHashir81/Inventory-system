@@ -36,7 +36,6 @@
     let limit = req.query.limit
     let skip = (page - 1) * limit
 
-    console.log('this is admin ')
     try {
 
       // Get total count of low stock products

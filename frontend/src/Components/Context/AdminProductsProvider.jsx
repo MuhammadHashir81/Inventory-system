@@ -27,7 +27,7 @@ const AdminProductsProvider = ({ children }) => {
   };
 
   // Fetch all products
-  const fetchProducts = async (page = 1, limit = 20) => {
+  const fetchProducts = async (page = 1, limit = 10) => {
     setLoading(true);
     try {
       const res = await axios.get(`${apiUrl}/api/admin/products/get?page=${page}&limit=${limit}`);

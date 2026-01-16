@@ -9,6 +9,7 @@ import TotalSales from "./TotalSales";
 
 
 const AdminDashboard = () => {
+
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar visibility
   const navigate = useNavigate();
