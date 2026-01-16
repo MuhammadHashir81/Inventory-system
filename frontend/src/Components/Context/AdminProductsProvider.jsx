@@ -33,7 +33,7 @@ const AdminProductsProvider = ({ children }) => {
       const res = await axios.get(`${apiUrl}/api/admin/products/get?page=${page}&limit=${limit}`);
       console.log(res.data.products);
       if (res.data.products) {
-        setProducts(res.data.products);
+        setProducts([...res.data.products]);
         setHomeTotalPages(res.data.totalPages)
       }
       return res.data.products;
