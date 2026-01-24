@@ -38,7 +38,7 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Home = () => {
 
-  const { products, setProducts, fetchProducts, homeTotalPages } = useContext(AdminProductsContext);
+  const { products, setProducts, fetchProducts, homeTotalPages,sellProducts } = useContext(AdminProductsContext);
   const { fetchSoldItems } = useContext(SoldItemsContext);
   const { fetchDebts } = useContext(DebtsContext);
   const [homeCurrentPage, setHomeCurrentPage] = useState(1)
@@ -53,6 +53,7 @@ const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [batchNo, setBatchNo] = useState("");
   const [licenseNo, setLicenseNo] = useState("")
+  const [cartQuery, setCartQuery] = useState("")
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", message: "", onConfirm: null });
@@ -80,24 +81,27 @@ const Home = () => {
 
     const res = await fetch(`${apiUrl}/api/admin/products/search?q=${search}`);
     const data = await res.json();
+    console.log(data)
     setResults(data.items || []);
   }
 
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchResults(query)
+      fetchResults(query || cartQuery)
     }, 2000);
 
     return () => {
       clearTimeout(timer);
     }
-  }, [query]);
+  }, [query, cartQuery]);
 
 
 
 
   const displayProducts = query ? results : products;
+  const displayCartProducts = cartQuery ? results : products;
+
 
   const openSellModal = (product) => {
     // Initialize cart with selected product
@@ -387,7 +391,7 @@ const Home = () => {
               )}
 
               {/* Stats Bar */}
-              {products.length > 0 && (
+              {displayProducts.length > 0 && (
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
                   <Chip
                     label={`${products.length} Products`}
@@ -556,33 +560,33 @@ const Home = () => {
 
         <div className="flex items-center justify-center space-x-4 mt-10">
           <div className="text-blue-500">
-          <button
-          onClick={handlePreviousPage}
-          disabled={homeCurrentPage === 1}
-          className={`flex  px-3 py-2  rounded-md ${homeCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200 ' }`}
-       
-          >
-            <ChevronLeft/>
-            <span>Previous</span>
+            <button
+              onClick={handlePreviousPage}
+              disabled={homeCurrentPage === 1}
+              className={`flex  px-3 py-2  rounded-md ${homeCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200 '}`}
+
+            >
+              <ChevronLeft />
+              <span>Previous</span>
 
 
-          </button>
+            </button>
           </div>
 
           <h4>Page {homeCurrentPage} of {homeTotalPages}</h4>
 
-             <div className="text-blue-500">
+          <div className="text-blue-500">
 
-          <button onClick={handleNextPage}
-          disabled={homeCurrentPage === homeTotalPages}
-          className={`flex   px-3 py-2 rounded-md ${homeCurrentPage === homeTotalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200' }`}
-          >
-            <span className="font-medium">Next</span>
+            <button onClick={handleNextPage}
+              disabled={homeCurrentPage === homeTotalPages}
+              className={`flex   px-3 py-2 rounded-md ${homeCurrentPage === homeTotalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200'}`}
+            >
+              <span className="font-medium">Next</span>
 
-            <ChevronRight />
+              <ChevronRight />
 
-          </button>
-            </div>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -623,10 +627,20 @@ const Home = () => {
                       <Autocomplete
                         fullWidth
                         size="small"
-                        options={availableProducts}
+                        options={displayCartProducts}
                         getOptionLabel={(option) => `${option.name} (Stock: ${option.inventory})`}
                         value={item.product}
-                        onChange={(e, newValue) => selectProductForCart(index, newValue)}
+                        onChange={(e, product) => {
+                          selectProductForCart(index, product);
+                          setCartQuery("");
+                        }}
+
+                        onInputChange={(e, value, reason) => {
+                          if (reason === "input") {
+                            setCartQuery(value)
+                          }
+                        }}
+
                         renderInput={(params) => (
                           <TextField {...params} label="Select Product" placeholder="Search products..." />
                         )}

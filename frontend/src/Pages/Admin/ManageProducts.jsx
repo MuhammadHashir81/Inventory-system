@@ -18,6 +18,8 @@ const style = {
   p: 4,
 };
 
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
+
 
 
 const ManageProducts = () => {
@@ -27,6 +29,8 @@ const ManageProducts = () => {
   const [isAddProductModalOpen,setIsAddProductOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [results,setResults] = useState([])
+  const [query,setQuery] = useState([])
 
    const [product, setProduct] = useState({
       name: "",
@@ -38,6 +42,31 @@ const ManageProducts = () => {
       batchNo:"",
       costPrice:""
     });
+
+
+
+  const fetchResults = async (search) => {
+    if (!search) {
+      setResults([]);
+      return;
+    }
+
+    const res = await fetch(`${apiUrl}/api/admin/products/search?q=${search}`);
+    const data = await res.json();
+    setResults(data.items || []);
+  }
+
+
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        fetchResults(query)
+      }, 2000);
+  
+      return () => {
+        clearTimeout(timer);
+      }
+    }, [query]);
+  
 
 
 
@@ -124,6 +153,8 @@ const ManageProducts = () => {
     closeDeleteModal();
   };
 
+  const displayProducts = query ? results : products
+
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100">
       {/* Header */}
@@ -135,8 +166,8 @@ const ManageProducts = () => {
             type="text"
             placeholder="Search products..."
             className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm sm:text-base"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
         </div>
         <div className="ml-10">
@@ -164,7 +195,7 @@ const ManageProducts = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map((product, index) => (
+            {displayProducts.map((product, index) => (
               <tr
                 key={product._id}
                 className={`border-b hover:bg-blue-50 transition-all ${
@@ -206,7 +237,7 @@ const ManageProducts = () => {
 
       {/* Card view for small screens */}
       <div className="flex flex-col gap-4 md:hidden">
-        {filteredProducts.map((product) => (
+        {displayProducts.map((product) => (
           <div
             key={product._id}
             className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100"
@@ -239,7 +270,7 @@ const ManageProducts = () => {
         ))}
       </div>
 
-      {filteredProducts.length === 0 && (
+      {results.length === 0 && (
         <div className="text-center py-10 text-gray-500 text-sm sm:text-base px-2">
           No products found matching “{searchTerm}”
         </div>
