@@ -1,6 +1,6 @@
 // ManageProducts.jsx
 import React, { useState, useContext, useEffect } from "react";
-import { Search, Pencil, Trash2,Plus } from "lucide-react";
+import { Search, Pencil, Trash2, Plus } from "lucide-react";
 import { AdminProductsContext } from "../../Components/Context/AdminProductsProvider";
 import { Modal, Box, Typography, TextField, Button, Stack } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
@@ -23,25 +23,26 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 
 const ManageProducts = () => {
-  const { products, fetchProducts, deleteProduct, updateProduct,addProduct } = useContext(AdminProductsContext);
+  const { products, fetchProducts, deleteProduct, updateProduct, addProduct } = useContext(AdminProductsContext);
+  console.log("these are admin dashboard product", products)
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddProductModalOpen,setIsAddProductOpen] = useState(false)
+  const [isAddProductModalOpen, setIsAddProductOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [results,setResults] = useState([])
-  const [query,setQuery] = useState([])
+  const [results, setResults] = useState([])
+  const [query, setQuery] = useState("")
 
-   const [product, setProduct] = useState({
-      name: "",
-      priceJohrabad: "",
-      priceOther: "",
-      category: "",
-      description: "",
-      inventory: "",
-      batchNo:"",
-      costPrice:""
-    });
+  const [product, setProduct] = useState({
+    name: "",
+    priceJohrabad: "",
+    priceOther: "",
+    category: "",
+    description: "",
+    inventory: "",
+    batchNo: "",
+    costPrice: ""
+  });
 
 
 
@@ -57,21 +58,21 @@ const ManageProducts = () => {
   }
 
 
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        fetchResults(query)
-      }, 2000);
-  
-      return () => {
-        clearTimeout(timer);
-      }
-    }, [query]);
-  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchResults(query)
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+    }
+  }, [query]);
 
 
 
 
-    
+
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -84,11 +85,11 @@ const ManageProducts = () => {
 
 
 
-  const openAddProductModal = ()=>{
+  const openAddProductModal = () => {
     setIsAddProductOpen(true)
   }
 
-  const closeAddProductModal = ()=>{
+  const closeAddProductModal = () => {
     setIsAddProductOpen(false)
   }
 
@@ -142,7 +143,7 @@ const ManageProducts = () => {
       batchNo: selectedProduct.batchNo,
       costPrice: selectedProduct.costPrice,
     });
-    console.log("batchNo",selectedProduct.batchNo)
+    console.log("batchNo", selectedProduct.batchNo)
 
     closeEditModal();
   };
@@ -198,9 +199,8 @@ const ManageProducts = () => {
             {displayProducts.map((product, index) => (
               <tr
                 key={product._id}
-                className={`border-b hover:bg-blue-50 transition-all ${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                }`}
+                className={`border-b hover:bg-blue-50 transition-all ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                  }`}
               >
                 <td className="px-4 sm:px-6 py-2 text-gray-700">{index + 1}</td>
                 <td className="px-4 sm:px-6 py-2 font-medium text-gray-800">{product.name}</td>
@@ -270,21 +270,20 @@ const ManageProducts = () => {
         ))}
       </div>
 
-      {results.length === 0 && (
-        <div className="text-center py-10 text-gray-500 text-sm sm:text-base px-2">
-          No products found matching “{searchTerm}”
-        </div>
+
+      {results && (
+        <Typography variant="body2" className="text-gray-600 mt-3 text-center">
+          Found {results.length} product{results.length !== 1 ? 's' : ''}
+        </Typography>
       )}
 
-      {/*  add prdudct modal */}
 
-
-<Modal open={isAddProductModalOpen} onClose={closeAddProductModal}>
+      <Modal open={isAddProductModalOpen} onClose={closeAddProductModal}>
         <Box sx={style} className="max-h-[80vh] overflow-y-scroll">
           <Typography variant="h6" mb={2}>Add Product</Typography>
           <Stack spacing={2}>
 
-           <TextField
+            <TextField
               label="Cost Price"
               name="costPrice"
               value={selectedProduct?.costPrice || 0}
@@ -352,7 +351,7 @@ const ManageProducts = () => {
               onChange={handleChange}
               fullWidth
             />
-           
+
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button variant="outlined" onClick={closeEditModal}>Cancel</Button>
               <Button variant="contained" onClick={handleUpdate}>add product</Button>
@@ -367,7 +366,7 @@ const ManageProducts = () => {
           <Typography variant="h6" mb={2}>Edit Product</Typography>
           <Stack spacing={2}>
 
-           <TextField
+            <TextField
               label="Cost Price"
               name="costPrice"
               value={selectedProduct?.costPrice || 0}
@@ -435,7 +434,7 @@ const ManageProducts = () => {
               onChange={handleChange}
               fullWidth
             />
-           
+
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button variant="outlined" onClick={closeEditModal}>Cancel</Button>
               <Button variant="contained" onClick={handleUpdate}>Update</Button>
@@ -462,3 +461,5 @@ const ManageProducts = () => {
 };
 
 export default ManageProducts;
+
+
