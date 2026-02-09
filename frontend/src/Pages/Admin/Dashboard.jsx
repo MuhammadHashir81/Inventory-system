@@ -5,13 +5,12 @@ import { AdminProductsContext } from '../../Components/Context/AdminProductsProv
 import { SoldItemsContext } from '../../Components/Context/SoldItemsProvider'
 
 const Dashboard = () => {
-  const { fetchProducts, products, getLowStockProducts, lowProducts,totalPages,totalLowStockProducts } = useContext(AdminProductsContext)
+  const { fetchProducts, products, getLowStockProducts, lowProducts,totalPages,totalProducts,totalLowStockProducts } = useContext(AdminProductsContext)
   const { soldItems } = useContext(SoldItemsContext)
 
   const [todaySales, setTodaySales] = useState('0')
   const [todaySalesPrice, setTotalSalesPrice] = useState("0.00")
   const [revenue, setRevenue] = useState("0.00")
-  const [lowStockProducts, setLowStockProducts] = useState([])
   const [lastSale, setLastSale] = useState('0')
   const [latestProductPrice, setLatestProductPrice] = useState('0')
   const [latestProductName, setLatestProductName] = useState('no product')
@@ -57,17 +56,14 @@ const Dashboard = () => {
     setTodaySales(getTodaySales)
   }, [soldItems])
 
-  // useEffect(() => {
-  //   const loadProducts = async () => {
-  //     const data = await fetchProducts();
-  //     console.log('thisis daata',data)
-  //     const lowStock = data.filter(item => item.inventory < 5);
-  //     console.log("low stakc ",lowStock)
-  //     setLowStockProducts(lowStock);
-  //   };
+  useEffect(() => {
+    const fetchingProducts = async()=>{
 
-  //   loadProducts();
-  // }, []);
+      const data = await fetchProducts();
+    }
+    fetchingProducts()
+
+  }, []);
 
   useMemo(() => {
     const subTotal = soldItems.reduce((acc, item) => acc + (item.totalAmount - item.remainingAmount), 0)
@@ -130,7 +126,7 @@ useEffect(() => {
         <div className='flex items-center justify-between shadow-md rounded-xl bg-white/70 w-full px-6 py-4'>
           <div className='mt-0.5 flex flex-col gap-1'>
             <p className='text-base sm:text-lg'>Total Products</p>
-            <h3 className='text-2xl sm:text-3xl font-semibold'>{products.length}</h3>
+            <h3 className='text-2xl sm:text-3xl font-semibold'>{totalProducts}</h3>
             <p className='text-sm sm:text-base'>{totalLowStockProducts} low stock products</p>
           </div>
 

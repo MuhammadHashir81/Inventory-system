@@ -38,7 +38,7 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Home = () => {
 
-  const { products, setProducts, fetchProducts, homeTotalPages,sellProducts } = useContext(AdminProductsContext);
+  const { totalProducts,totalLowStockProducts, products, setProducts, fetchProducts, homeTotalPages,sellProducts,lowProducts } = useContext(AdminProductsContext);
   const { fetchSoldItems } = useContext(SoldItemsContext);
   const { fetchDebts } = useContext(DebtsContext);
   const [homeCurrentPage, setHomeCurrentPage] = useState(1)
@@ -71,6 +71,10 @@ const Home = () => {
   // quering the results
 
 
+  
+    useEffect(() => {
+  lowProducts();   // fetch low stock count
+}, []);
 
 
   const fetchResults = async (search) => {
@@ -394,15 +398,15 @@ const Home = () => {
               {displayProducts.length > 0 && (
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
                   <Chip
-                    label={`${products.length} Products`}
+                    label={`${totalProducts} Products`}
                     sx={{ bgcolor: 'rgba(59, 130, 246, 0.1)', color: 'rgb(37, 99, 235)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
                   />
-                  <Chip
+                  {/* <Chip
                     label={`${products.filter(p => p.inventory > 0).length} In Stock`}
                     sx={{ bgcolor: 'rgba(34, 197, 94, 0.1)', color: 'rgb(22, 163, 74)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
-                  />
+                  /> */}
                   <Chip
-                    label={`${products.filter(p => p.inventory === 0).length} Out of Stock`}
+                    label={`${totalLowStockProducts} Out of Stock`}
                     sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(220, 38, 38)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
                   />
                 </div>
