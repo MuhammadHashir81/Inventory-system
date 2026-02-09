@@ -59,7 +59,7 @@ const Debts = () => {
 
     const timer = setTimeout(() => {
       searhedDebts()
-    }, 2000);
+    }, 300);
 
     return () => {
       clearTimeout(timer);

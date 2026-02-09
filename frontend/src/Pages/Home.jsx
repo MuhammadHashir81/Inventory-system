@@ -89,7 +89,7 @@ const Home = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchResults(query || cartQuery)
-    }, 2000);
+    }, 300);
 
     return () => {
       clearTimeout(timer);

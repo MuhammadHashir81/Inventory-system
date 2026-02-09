@@ -4,7 +4,7 @@ import { Search, Pencil, Trash2, Plus } from "lucide-react";
 import { AdminProductsContext } from "../../Components/Context/AdminProductsProvider";
 import { Modal, Box, Typography, TextField, Button, Stack } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
-
+import { ChevronLeft,ChevronRight } from "lucide-react";
 
 const style = {
   position: "absolute",
@@ -23,8 +23,7 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 
 const ManageProducts = () => {
-  const { products, fetchProducts, deleteProduct, updateProduct, addProduct } = useContext(AdminProductsContext);
-  console.log("these are admin dashboard product", products)
+  const { products, fetchProducts, deleteProduct, updateProduct, addProduct,homeTotalPages } = useContext(AdminProductsContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductOpen] = useState(false)
@@ -32,6 +31,7 @@ const ManageProducts = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [results, setResults] = useState([])
   const [query, setQuery] = useState("")
+    const [homeCurrentPage, setHomeCurrentPage] = useState(1)
 
   const [product, setProduct] = useState({
     name: "",
@@ -61,7 +61,7 @@ const ManageProducts = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchResults(query)
-    }, 2000);
+    }, 300);
 
     return () => {
       clearTimeout(timer);
@@ -69,13 +69,27 @@ const ManageProducts = () => {
   }, [query]);
 
 
+  const handleNextPage = () => {
+    if (homeCurrentPage < homeTotalPages) {
+      setHomeCurrentPage(prev => prev + 1)
+    }
+
+  }
+  const handlePreviousPage = () => {
+    if (homeCurrentPage > 1) {
+      setHomeCurrentPage(prev => prev - 1)
+    }
+
+  }
+
+
 
 
 
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts(homeCurrentPage);
+  }, [homeCurrentPage]);
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -180,6 +194,7 @@ const ManageProducts = () => {
 
       {/* Table view for desktop */}
       <div className="overflow-x-auto hidden md:block">
+      
         <table className="w-full border-collapse text-left text-sm sm:text-base min-w-[1000px]">
           <thead>
             <tr className="bg-blue-50 text-gray-700 uppercase text-xs sm:text-sm tracking-wider">
@@ -188,7 +203,7 @@ const ManageProducts = () => {
               <th className="px-4 sm:px-6 py-2">Category</th>
               <th className="px-4 sm:px-6 py-2">Price (Johrabad)</th>
               <th className="px-4 sm:px-6 py-2">Price (Other Cities)</th>
-              <th className="px-4 sm:px-6 py-2">Stock</th>
+              <th className="px-4 sm:px-6 py-2">Inventory</th>
               <th className="px-4 sm:px-6 py-2">Sold</th>
               <th className="px-4 sm:px-6 py-2">Bath no</th>
               <th className="px-4 sm:px-6 py-2">Cost Price</th>
@@ -263,19 +278,48 @@ const ManageProducts = () => {
               <div><strong>Category:</strong> {product.category}</div>
               <div><strong>Price (Johrabad):</strong> Rs. {product.price?.johrabad ?? "N/A"}</div>
               <div><strong>Price (Other):</strong> Rs. {product.price?.other ?? "N/A"}</div>
-              <div><strong>Stock:</strong> {product.inventory}</div>
+              <div><strong>Inventory:</strong> {product.inventory}</div>
               <div><strong>Sold:</strong> {product.sold ?? 0}</div>
             </div>
           </div>
         ))}
       </div>
 
+        <div className={` ${query.trim() ? 'hidden': 'block'} flex items-center justify-center space-x-4 mt-10`}>
+                  <div className="text-blue-500">
+                    <button
+                      onClick={handlePreviousPage}
+                      disabled={homeCurrentPage === 1}
+                      className={`flex  px-3 py-2  rounded-md ${homeCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200 '}`}
+        
+                    >
+                      <ChevronLeft />
+                      <span>Previous</span>
+        
+        
+                    </button>
+                  </div>
+        
+                  <h4>Page {homeCurrentPage} of {homeTotalPages}</h4>
+        
+                  <div className="text-blue-500">
+        
+                    <button onClick={handleNextPage}
+                      disabled={homeCurrentPage === homeTotalPages}
+                      className={`flex   px-3 py-2 rounded-md ${homeCurrentPage === homeTotalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200'}`}
+                    >
+                      <span className="font-medium">Next</span>
+        
+                      <ChevronRight />
+        
+                    </button>
+                  </div>
+                </div>
 
-      {results && (
-        <Typography variant="body2" className="text-gray-600 mt-3 text-center">
-          Found {results.length} product{results.length !== 1 ? 's' : ''}
-        </Typography>
-      )}
+
+      
+
+
 
 
       <Modal open={isAddProductModalOpen} onClose={closeAddProductModal}>
