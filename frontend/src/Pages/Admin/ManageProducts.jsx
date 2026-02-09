@@ -34,6 +34,8 @@ const ManageProducts = () => {
   const [results, setResults] = useState([])
   const [query, setQuery] = useState("")
   const [homeCurrentPage, setHomeCurrentPage] = useState(1)
+  const [isSearching,setIsSearching] = useState(false)
+
 
   const [product, setProduct] = useState({
     name: "",
@@ -53,9 +55,11 @@ const ManageProducts = () => {
       setResults([]);
       return;
     }
+    setIsSearching(true)
 
     const res = await fetch(`${apiUrl}/api/admin/products/search?q=${search}`);
     const data = await res.json();
+    setIsSearching(false)
     setResults(data.items || []);
   }
 
@@ -174,6 +178,7 @@ const ManageProducts = () => {
 
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100">
+         
       {/* Header */}
       <div className="flex flex-col sm:flex-row  sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4 ">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Products</h2>
@@ -197,14 +202,21 @@ const ManageProducts = () => {
 
       {/* Table view for desktop */}
 
-      <div className="overflow-x-auto hidden md:block">
+      <div className=" relative overflow-x-auto hidden md:block">
+        
         {/* <h4 className="font-semibold text-xl text-center mb-3"> <span className="text-blue-500"> {totalProducts} </span> Total Products</h4> */}
+        {/* {
+          isSearching && (
+           <h4 className="absolute left-[50%] font-semibold text-xl">loading...</h4>
+          )
+        } */}
 
         {query.trim() && (
-          <Typography variant="body2" className="text-gray-600 mt-3 text-center">
+          <Typography variant="body2" className={` ${isSearching ? 'hidden': 'block'} text-gray-600 mt-3 text-center`}>
             Found {results.length} product{results.length !== 1 ? 's' : ''}
           </Typography>
         )}
+        
 
         <table className="w-full border-collapse text-left text-sm sm:text-base min-w-[1000px]">
           <thead>

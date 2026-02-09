@@ -5,6 +5,7 @@ import { AdminProductsContext } from "../Components/Context/AdminProductsProvide
 import { SoldItemsContext } from "../Components/Context/SoldItemsProvider";
 import { DebtsContext } from "../Components/Context/DebtsProvider";
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Oval } from 'react-loader-spinner'
 
 import {
   Modal, Box, Typography, TextField, Button,
@@ -38,7 +39,7 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Home = () => {
 
-  const { totalProducts,totalLowStockProducts, products, setProducts, fetchProducts, homeTotalPages,sellProducts,lowProducts } = useContext(AdminProductsContext);
+  const { totalProducts, totalLowStockProducts, products, setProducts, fetchProducts, homeTotalPages, sellProducts, lowProducts } = useContext(AdminProductsContext);
   const { fetchSoldItems } = useContext(SoldItemsContext);
   const { fetchDebts } = useContext(DebtsContext);
   const [homeCurrentPage, setHomeCurrentPage] = useState(1)
@@ -54,6 +55,7 @@ const Home = () => {
   const [batchNo, setBatchNo] = useState("");
   const [licenseNo, setLicenseNo] = useState("")
   const [cartQuery, setCartQuery] = useState("")
+  const [isSearching, setIsSearching] = useState("")
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", message: "", onConfirm: null });
@@ -71,21 +73,25 @@ const Home = () => {
   // quering the results
 
 
-  
-    useEffect(() => {
-  lowProducts();   // fetch low stock count
-}, []);
+
+  useEffect(() => {
+    lowProducts();   // fetch low stock count
+  }, []);
 
 
   const fetchResults = async (search) => {
+    
     if (!search) {
       setResults([]);
+      
       return;
     }
+    setIsSearching(true)
+
 
     const res = await fetch(`${apiUrl}/api/admin/products/search?q=${search}`);
     const data = await res.json();
-    console.log(data)
+    setIsSearching(false)
     setResults(data.items || []);
   }
 
@@ -333,8 +339,10 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
+
+      <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
         <Toaster />
+        
 
         {/* Header Section */}
         <Fade in timeout={600}>
@@ -350,7 +358,7 @@ const Home = () => {
         {/* Search Bar */}
         {products.length > 0 && (
           <Fade in timeout={800}>
-            <div className="max-w-2xl mx-auto mb-12">
+            <div className="relative max-w-2xl mx-auto mb-12">
               <TextField
                 fullWidth
                 placeholder="Search products by name or description..."
@@ -389,7 +397,7 @@ const Home = () => {
                 }}
               />
               {query.trim() && (
-                <Typography variant="body2" className="text-gray-600 mt-3 text-center">
+                <Typography variant="body2" className={`${isSearching ? 'hidden' : 'block'} text-gray-600 mt-3 text-center`}>
                   Found {results.length} product{results.length !== 1 ? 's' : ''}
                 </Typography>
               )}
@@ -409,13 +417,20 @@ const Home = () => {
                     label={`${totalLowStockProducts} Out of Stock`}
                     sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(220, 38, 38)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
                   />
+                  
                 </div>
               )}
+              {
+          isSearching && (
+           <h4 className="absolute left-[50%] font-semibold text-xl">loading...</h4>
+          )
+        }
 
             </div>
 
           </Fade>
         )}
+
 
         {/* Products Grid */}
         {products.length === 0 ? (
@@ -447,6 +462,8 @@ const Home = () => {
           </Fade>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+
             {displayProducts.map((product, index) => {
               const stockStatus = getStockStatus(product.inventory);
               return (
@@ -562,7 +579,7 @@ const Home = () => {
           </div>
         )}
 
-        <div className="flex items-center justify-center space-x-4 mt-10">
+        <div className={` ${isSearching || query.trim() ? 'hidden' : 'flex'} flex items-center justify-center space-x-4 mt-10`}>
           <div className="text-blue-500">
             <button
               onClick={handlePreviousPage}
@@ -631,6 +648,8 @@ const Home = () => {
                       <Autocomplete
                         fullWidth
                         size="small"
+                        loading={isSearching}
+                        loadingText='loading...'
                         options={displayCartProducts}
                         getOptionLabel={(option) => `${option.name} (Stock: ${option.inventory})`}
                         value={item.product}
