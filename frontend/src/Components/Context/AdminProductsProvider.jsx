@@ -9,6 +9,8 @@ const AdminProductsProvider = ({ children }) => {
   const [getLowStockProducts, setLowStockProducts] = useState([]);
   const [totalPages,setTotalPages] = useState(1)
   const [homeTotalPages,setHomeTotalPages] = useState(1)
+  const [totalProducts,setTotalProducts] = useState(0)
+  const [totalLowStockProducts,setTotalLowStockProducts] = useState(0)
   
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -18,6 +20,7 @@ const AdminProductsProvider = ({ children }) => {
       const response = await axios.get(`${apiUrl}/api/admin/products/low-stock-products?page=${page}&limit=${limit}`);
       setLowStockProducts(response.data.getProducts);
       setTotalPages(response.data.totalPages)
+      setTotalLowStockProducts(response.data.totalCount)
 
       console.log("these are total pages ",totalPages)
       console.log("these are low stock products", response.data.getProducts);
@@ -35,6 +38,7 @@ const AdminProductsProvider = ({ children }) => {
       if (res.data.products) {
         setProducts([...res.data.products]);
         setHomeTotalPages(res.data.totalPages)
+        setTotalProducts(res.data.totalCount)
       }
       return res.data.products;
     } catch (error) {
@@ -131,7 +135,9 @@ const AdminProductsProvider = ({ children }) => {
         lowProducts,
         getLowStockProducts,
         totalPages,
-        homeTotalPages
+        homeTotalPages,
+        totalProducts,
+        totalLowStockProducts
        }}
 
     >

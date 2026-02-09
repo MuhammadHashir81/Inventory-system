@@ -384,7 +384,7 @@ const Home = () => {
                   }
                 }}
               />
-              {results && (
+              {query.trim() && (
                 <Typography variant="body2" className="text-gray-600 mt-3 text-center">
                   Found {results.length} product{results.length !== 1 ? 's' : ''}
                 </Typography>

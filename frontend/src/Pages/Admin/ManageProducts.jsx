@@ -4,7 +4,7 @@ import { Search, Pencil, Trash2, Plus } from "lucide-react";
 import { AdminProductsContext } from "../../Components/Context/AdminProductsProvider";
 import { Modal, Box, Typography, TextField, Button, Stack } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
-import { ChevronLeft,ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const style = {
   position: "absolute",
@@ -18,12 +18,14 @@ const style = {
   p: 4,
 };
 
+const ITEMS_PER_PAGE = 10;
+
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 
 
 const ManageProducts = () => {
-  const { products, fetchProducts, deleteProduct, updateProduct, addProduct,homeTotalPages } = useContext(AdminProductsContext);
+  const { products, fetchProducts, deleteProduct, updateProduct, addProduct, homeTotalPages, totalProducts } = useContext(AdminProductsContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductOpen] = useState(false)
@@ -31,7 +33,7 @@ const ManageProducts = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [results, setResults] = useState([])
   const [query, setQuery] = useState("")
-    const [homeCurrentPage, setHomeCurrentPage] = useState(1)
+  const [homeCurrentPage, setHomeCurrentPage] = useState(1)
 
   const [product, setProduct] = useState({
     name: "",
@@ -192,9 +194,18 @@ const ManageProducts = () => {
         </div>
       </div>
 
+
       {/* Table view for desktop */}
+
       <div className="overflow-x-auto hidden md:block">
-      
+        {/* <h4 className="font-semibold text-xl text-center mb-3"> <span className="text-blue-500"> {totalProducts} </span> Total Products</h4> */}
+
+        {query.trim() && (
+          <Typography variant="body2" className="text-gray-600 mt-3 text-center">
+            Found {results.length} product{results.length !== 1 ? 's' : ''}
+          </Typography>
+        )}
+
         <table className="w-full border-collapse text-left text-sm sm:text-base min-w-[1000px]">
           <thead>
             <tr className="bg-blue-50 text-gray-700 uppercase text-xs sm:text-sm tracking-wider">
@@ -217,7 +228,8 @@ const ManageProducts = () => {
                 className={`border-b hover:bg-blue-50 transition-all ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
                   }`}
               >
-                <td className="px-4 sm:px-6 py-2 text-gray-700">{index + 1}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-700">{(homeCurrentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                </td>
                 <td className="px-4 sm:px-6 py-2 font-medium text-gray-800">{product.name}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.category}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">
@@ -285,39 +297,39 @@ const ManageProducts = () => {
         ))}
       </div>
 
-        <div className={` ${query.trim() ? 'hidden': 'block'} flex items-center justify-center space-x-4 mt-10`}>
-                  <div className="text-blue-500">
-                    <button
-                      onClick={handlePreviousPage}
-                      disabled={homeCurrentPage === 1}
-                      className={`flex  px-3 py-2  rounded-md ${homeCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200 '}`}
-        
-                    >
-                      <ChevronLeft />
-                      <span>Previous</span>
-        
-        
-                    </button>
-                  </div>
-        
-                  <h4>Page {homeCurrentPage} of {homeTotalPages}</h4>
-        
-                  <div className="text-blue-500">
-        
-                    <button onClick={handleNextPage}
-                      disabled={homeCurrentPage === homeTotalPages}
-                      className={`flex   px-3 py-2 rounded-md ${homeCurrentPage === homeTotalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200'}`}
-                    >
-                      <span className="font-medium">Next</span>
-        
-                      <ChevronRight />
-        
-                    </button>
-                  </div>
-                </div>
+      <div className={` ${query.trim() ? 'hidden' : 'block'} flex items-center justify-center space-x-4 mt-10`}>
+        <div className="text-blue-500">
+          <button
+            onClick={handlePreviousPage}
+            disabled={homeCurrentPage === 1}
+            className={`flex  px-3 py-2  rounded-md ${homeCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200 '}`}
+
+          >
+            <ChevronLeft />
+            <span>Previous</span>
 
 
-      
+          </button>
+        </div>
+
+        <h4>Page {homeCurrentPage} of {homeTotalPages}</h4>
+
+        <div className="text-blue-500">
+
+          <button onClick={handleNextPage}
+            disabled={homeCurrentPage === homeTotalPages}
+            className={`flex   px-3 py-2 rounded-md ${homeCurrentPage === homeTotalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200'}`}
+          >
+            <span className="font-medium">Next</span>
+
+            <ChevronRight />
+
+          </button>
+        </div>
+      </div>
+
+
+
 
 
 
