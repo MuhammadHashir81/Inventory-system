@@ -111,9 +111,9 @@ useEffect(() => {
       <h1 className='font-bold text-2xl sm:text-3xl lg:text-4xl'>Dashboard Overview</h1>
       <div className='mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
 
-        <div className='flex items-center justify-between shadow-md rounded-xl bg-white/70 py-4 w-full px-6'>
+        <div className='flex items-center justify-between bg-gray-50 rounded-xl py-4 w-full px-6'>
           <div className='mt-0.5 flex flex-col gap-1'>
-            <p className='text-base sm:text-lg'>Today's Sales</p>
+            <p className='text-base sm:text-lg '>Today's Sales</p>
             <h3 className='text-2xl sm:text-3xl font-semibold'>PKR {todaySalesPrice.toLocaleString()}</h3>
             <p className='text-sm sm:text-base'>{todaySales.length} sale{todaySales.length !== 1 ? 's' : ''}</p>
           </div>
@@ -123,9 +123,9 @@ useEffect(() => {
           </div>
         </div>
 
-        <div className='flex items-center justify-between shadow-md rounded-xl bg-white/70 w-full px-6 py-4'>
+        <div className='flex items-center justify-between bg-gray-50 rounded-xl w-full px-6 py-4'>
           <div className='mt-0.5 flex flex-col gap-1'>
-            <p className='text-base sm:text-lg'>Total Products</p>
+            <p className='text-base sm:text-lg '>Total Products</p>
             <h3 className='text-2xl sm:text-3xl font-semibold'>{totalProducts}</h3>
             <p className='text-sm sm:text-base'>{totalLowStockProducts} low stock products</p>
           </div>
@@ -135,9 +135,9 @@ useEffect(() => {
           </div>
         </div>
 
-        <div className='flex items-center justify-between shadow-md rounded-xl bg-white/70 w-full px-6 py-4 sm:col-span-2 lg:col-span-1'>
+        <div className='flex items-center justify-between bg-gray-50 rounded-xl w-full px-6 py-4 sm:col-span-2 lg:col-span-1'>
           <div className='mt-0.5 flex flex-col gap-1'>
-            <p className='text-base sm:text-lg'>Total revenue</p>
+            <p className='text-base sm:text-lg '>Total revenue</p>
             <h3 className='text-2xl sm:text-3xl font-semibold'>PKR {revenue.toLocaleString()}</h3>
             <p className='text-sm sm:text-base'>All time</p>
           </div>
@@ -227,7 +227,7 @@ useEffect(() => {
             <h2 className='text-lg sm:text-xl font-semibold'>Recent Activity</h2>
           </div>
 
-          <div className='bg-blue-500/10 mt-6 px-4 rounded-md py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2'>
+          <div className='bg-blue-100/30 rounded-2xl mt-6 px-4 rounded-md py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2'>
             <div>
               <p className='text-base sm:text-lg font-semibold'>New Sale</p>
               <p className='text-sm'>{lastSale} minute{lastSale <= 1 ? '' : 's'} ago</p>
