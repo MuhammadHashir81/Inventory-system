@@ -54,8 +54,6 @@ const AddProduct = () => {
         } catch (error) {
             toast.error(error.response.data.message || "Failed to add product");
         }
-
-
         setLoading(false)
     };
 
@@ -75,7 +73,7 @@ const AddProduct = () => {
                 </button>
 
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex flex-col">
                     <label className="text-gray-700 font-medium mb-1 sm:mb-2">Product Name</label>
                     <input
@@ -183,10 +181,10 @@ const AddProduct = () => {
 
                 <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all"
+                    className="flex items-center justify-center w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all"
                     disabled={loading}
                 >
-                    {loading ? "Adding..." : 'Add Product'}
+                  <Plus size={24} />   {loading ? "Adding..." : 'Add Product'}
                 </button>
             </form>
         </div>
