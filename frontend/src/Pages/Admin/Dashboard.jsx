@@ -3,10 +3,12 @@ import { Package, TrendingUp, DollarSign, TriangleAlert, ChevronLeft, ChevronRig
 import { useContext } from 'react'
 import { AdminProductsContext } from '../../Components/Context/AdminProductsProvider'
 import { SoldItemsContext } from '../../Components/Context/SoldItemsProvider'
+import { useNavigate } from 'react-router-dom'
 
 const Dashboard = () => {
   const { fetchProducts, products, getLowStockProducts, lowProducts,totalPages,totalProducts,totalLowStockProducts } = useContext(AdminProductsContext)
   const { soldItems } = useContext(SoldItemsContext)
+  const navigate = useNavigate()
 
   const [todaySales, setTodaySales] = useState('0')
   const [todaySalesPrice, setTotalSalesPrice] = useState("0.00")
@@ -123,7 +125,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <div className='flex items-center justify-between bg-gray-50 rounded-xl w-full px-6 py-4'>
+        <div onClick={()=>navigate("/admin/products")} className='flex items-center justify-between bg-gray-50 rounded-xl w-full px-6 py-4'>
           <div className='mt-0.5 flex flex-col gap-1'>
             <p className='text-base sm:text-lg '>Total Products</p>
             <h3 className='text-2xl sm:text-3xl font-semibold'>{totalProducts}</h3>

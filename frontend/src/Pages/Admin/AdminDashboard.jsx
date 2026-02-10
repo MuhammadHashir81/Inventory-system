@@ -20,7 +20,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen flex">
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-300 z-20 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">City Pharmacy</h1>
+        <h1 onClick={()=>navigate("/admin")} className="text-lg font-semibold">City Pharmacy</h1>
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 hover:bg-gray-100 rounded-lg"
@@ -47,7 +47,7 @@ const AdminDashboard = () => {
           pt-16 lg:pt-0
         `}
       >
-       <h1 className="text-lg font-semibold m-4 mt-0">City Pharmacy</h1>
+       <h1 onClick={()=>navigate("/admin")} className="text-lg font-semibold m-4 mt-0">City Pharmacy</h1>
         {tabs.map((tab) => (
           <button
             key={tab.path}
