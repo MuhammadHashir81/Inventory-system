@@ -107,7 +107,7 @@ useEffect(() => {
   }
 
   return (
-    <div className='px-4 sm:px-6 lg:px-8'>
+    <div className=''>
       <h1 className='font-bold text-2xl sm:text-3xl lg:text-4xl'>Dashboard Overview</h1>
       <div className='mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
 
@@ -154,7 +154,7 @@ useEffect(() => {
         <div className='bg-white/70 shadow-sm rounded-xl min-h-[350px] px-4 py-8 flex flex-col'>
 
           <div className='flex items-center gap-2'>
-            <div className='bg-red-500/20 px-2 py-2 rounded-lg flex-shrink-0'>
+            <div className=' px-2 py-2 rounded-lg flex-shrink-0'>
               <TriangleAlert className='text-red-500' size={30} />
             </div>
             <h2 className='text-lg sm:text-xl font-semibold'>Low Stock Alert</h2>
@@ -221,7 +221,7 @@ useEffect(() => {
         <div className='bg-white/70 shadow-sm rounded-xl min-h-[350px] px-4 py-8'>
 
           <div className='flex items-center gap-2'>
-            <div className='bg-blue-500/20 px-2 py-2 rounded-lg flex-shrink-0'>
+            <div className=' px-2 py-2 rounded-lg flex-shrink-0'>
               <TrendingUp className='text-blue-500' size={30} />
             </div>
             <h2 className='text-lg sm:text-xl font-semibold'>Recent Activity</h2>
