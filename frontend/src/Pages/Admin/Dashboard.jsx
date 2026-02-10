@@ -58,14 +58,7 @@ const Dashboard = () => {
     setTodaySales(getTodaySales)
   }, [soldItems])
 
-  useEffect(() => {
-    const fetchingProducts = async()=>{
-
-      const data = await fetchProducts();
-    }
-    fetchingProducts()
-
-  }, []);
+  
 
   useMemo(() => {
     const subTotal = soldItems.reduce((acc, item) => acc + (item.totalAmount - item.remainingAmount), 0)
