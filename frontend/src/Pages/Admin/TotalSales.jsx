@@ -13,7 +13,6 @@ import { Checkbox, FormControlLabel, Autocomplete, TextField } from '@mui/materi
 const TotalSales = () => {
   const { soldItems, fetchSoldItems, deleteSoldItems } = useContext(SoldItemsContext);
   const { products } = useContext(AdminProductsContext);
-  console.log(soldItems)
   const [expandedSale, setExpandedSale] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("all");
   const [editingInvoice, setEditingInvoice] = useState(null);
@@ -24,9 +23,6 @@ const TotalSales = () => {
   const [shopSearchInput, setShopSearchInput] = useState("");
   const [productSearchInput, setProductSearchInput] = useState("");
 
-  const handleClickOpen = () => {
-    setDeleteOpen(true);
-  };
 
   const handleClose = () => {
     setDeleteOpen(false);

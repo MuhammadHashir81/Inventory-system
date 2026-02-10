@@ -1,18 +1,32 @@
-import { BarChart2, LayoutDashboard, Package, PlusCircle, Menu, X } from "lucide-react";
+import axios from "axios";
+import { BarChart2, LayoutDashboard, Package, PlusCircle, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 const AdminDashboard = () => {
+  const apiUrl = import.meta.env.VITE_BACKEND_URL;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
 
+  const handleLogout = async () => {
+    try {
+      let res = await axios.get(`${apiUrl}/api/admin/logout`, { withCredentials: true });
+      localStorage.removeItem("adminToken");
+      toast(res.data.success)
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   const tabs = [
     { path: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
     { path: "/admin/products", label: "Manage Products", icon: <Package size={20} /> },
     { path: "/admin/products/add", label: "Add Product", icon: <PlusCircle size={20} /> },
     { path: "/admin/sales", label: "Total Sales", icon: <BarChart2 size={20} /> },
+    { def: handleLogout, label: "Logout", icon: <LogOut size={20} /> },
   ];
 
 
@@ -20,7 +34,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen flex">
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-300 z-20 px-4 py-3 flex items-center justify-between">
-        <h1 onClick={()=>navigate("/admin")} className="text-lg font-semibold">City Pharmacy</h1>
+        <h1 onClick={() => navigate("/admin")} className="text-lg font-semibold">City Pharmacy</h1>
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 hover:bg-gray-100 rounded-lg"
@@ -47,13 +61,17 @@ const AdminDashboard = () => {
           pt-16 lg:pt-0
         `}
       >
-       <h1 onClick={()=>navigate("/admin")} className="text-lg font-semibold m-4 mt-0">City Pharmacy</h1>
+        <h1 onClick={() => navigate("/admin")} className="text-lg font-semibold m-4 mt-0">City Pharmacy</h1>
         {tabs.map((tab) => (
           <button
-            key={tab.path}
+            key={tab.path && tab.path}
             onClick={() => {
-              navigate(tab.path);
-              setIsSidebarOpen(false);
+              if (tab.def){
+                tab.def()
+              } else {
+                navigate(tab.path);
+                setIsSidebarOpen(false);
+              }
             }}
             className={`w-full px-4 py-3 flex items-center gap-3 transition-colors
               ${isActive(tab.path)

@@ -113,7 +113,7 @@ useEffect(() => {
       <h1 className='font-bold text-2xl sm:text-3xl lg:text-4xl'>Dashboard Overview</h1>
       <div className='mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
 
-        <div className='flex items-center justify-between bg-gray-50 rounded-xl py-4 w-full px-6'>
+        <div onClick={()=>navigate("/admin/sales")} className='flex items-center justify-between bg-gray-50 rounded-xl py-4 w-full px-6'>
           <div className='mt-0.5 flex flex-col gap-1'>
             <p className='text-base sm:text-lg '>Today's Sales</p>
             <h3 className='text-2xl sm:text-3xl font-semibold'>PKR {todaySalesPrice.toLocaleString()}</h3>

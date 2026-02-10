@@ -24,9 +24,9 @@ import { Toaster } from "react-hot-toast";
 function App() {
   return (
     <BrowserRouter>
-        <Toaster
-                position="bottom-center"
-              />
+      <Toaster
+        position="bottom-center"
+      />
       <Suspense fallback={<div className="h-screen w-screen flex items-center justify-center">Loading...</div>}>
         <Routes>
 
