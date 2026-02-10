@@ -19,8 +19,8 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen flex">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b z-20 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Admin Dashboard</h1>
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-300 z-20 px-4 py-3 flex items-center justify-between">
+        <h1 className="text-lg font-semibold">City Pharmacy</h1>
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 hover:bg-gray-100 rounded-lg"
