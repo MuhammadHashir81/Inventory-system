@@ -6,6 +6,7 @@ const AdminDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const isActive = (path) => location.pathname === path;
 
   const tabs = [
     { path: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
@@ -14,7 +15,6 @@ const AdminDashboard = () => {
     { path: "/admin/sales", label: "Total Sales", icon: <BarChart2 size={20} /> },
   ];
 
-  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="min-h-screen flex">
@@ -41,13 +41,13 @@ const AdminDashboard = () => {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-40
-          w-72 bg-white border-r
+          w-72 bg-white border-r border-gray-300
           transform transition-transform duration-300 ease-in-out
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           pt-16 lg:pt-0
         `}
       >
-       <h1 className="text-lg font-semibold m-4">City Pharmacy</h1>
+       <h1 className="text-lg font-semibold m-4 mt-0">City Pharmacy</h1>
         {tabs.map((tab) => (
           <button
             key={tab.path}
