@@ -17,6 +17,7 @@ createRoot(document.getElementById('root')).render(
           <SoldItemsProvider>
             <DebtsProvider>
               <App />
+          
             </DebtsProvider>
           </SoldItemsProvider>
         </SupplierAuthProvider>
@@ -26,4 +27,4 @@ createRoot(document.getElementById('root')).render(
 )
 
 
-          {/* mongodb password: 4iiOrna7DIbMVb2F */}
+{/* mongodb password: 4iiOrna7DIbMVb2F */ }

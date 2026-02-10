@@ -5,6 +5,7 @@ import { AdminProductsContext } from "../../Components/Context/AdminProductsProv
 import { Modal, Box, Typography, TextField, Button, Stack } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const style = {
   position: "absolute",
@@ -34,7 +35,8 @@ const ManageProducts = () => {
   const [results, setResults] = useState([])
   const [query, setQuery] = useState("")
   const [homeCurrentPage, setHomeCurrentPage] = useState(1)
-  const [isSearching,setIsSearching] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const navigate = useNavigate()
 
 
   const [product, setProduct] = useState({
@@ -169,7 +171,6 @@ const ManageProducts = () => {
   };
 
   const handleDelete = async () => {
-    console.log("hahir")
     await deleteProduct(selectedProduct._id);
     closeDeleteModal();
   };
@@ -177,11 +178,20 @@ const ManageProducts = () => {
   const displayProducts = query ? results : products
 
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100">
-         
+    <div className="bg-white">
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row  sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4 ">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Products</h2>
+      <div className="w-full flex flex-col sm:flex-row  sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4 ">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Products</h2>
+          <button
+            onClick={() => navigate('/admin/products/add')}
+            className="flex items-center bg-blue-600 px-2 hover:bg-blue-700 text-white py-2 sm:py-3 rounded-lg shadow-md transition-all duration-200 text-sm sm:text-base font-medium"
+
+          >
+            <Plus /> Add Product
+          </button>
+        </div>
         <div className="relative w-full sm:w-64 sm:ml-auto ">
           <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
           <input
@@ -203,7 +213,7 @@ const ManageProducts = () => {
       {/* Table view for desktop */}
 
       <div className=" relative overflow-x-auto hidden md:block">
-        
+
         {/* <h4 className="font-semibold text-xl text-center mb-3"> <span className="text-blue-500"> {totalProducts} </span> Total Products</h4> */}
         {/* {
           isSearching && (
@@ -212,11 +222,11 @@ const ManageProducts = () => {
         } */}
 
         {query.trim() && (
-          <Typography variant="body2" className={` ${isSearching ? 'hidden': 'block'} text-gray-600 mt-3 text-center`}>
+          <Typography variant="body2" className={` ${isSearching ? 'hidden' : 'block'} text-gray-600 mt-3 text-center`}>
             Found {results.length} product{results.length !== 1 ? 's' : ''}
           </Typography>
         )}
-        
+
 
         <table className="w-full border-collapse text-left text-sm sm:text-base min-w-[1000px]">
           <thead>

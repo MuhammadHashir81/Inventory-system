@@ -4,6 +4,9 @@
   // ➕ Add a new product
   export const adminAddProducts = async (req, res) => {
     try {
+      if (!req.body) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
       const { name, category, description, priceJohrabad, priceOther, inventory, batchNo,costPrice , sold = 0 } = req.body;
 
       if (!name || !category || !description || priceJohrabad == null || priceOther == null || inventory == null) {

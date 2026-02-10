@@ -1,59 +1,70 @@
-import React, { useContext, useEffect } from "react";
+import React, { lazy, Suspense, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminAuthContext } from "../Components/Context/AdminAuthProvider";
-import { SupplierAuthContext } from "../Components/Context/SupplierAuthProvider"; // Adjust path if needed
+import { SupplierAuthContext } from "../Components/Context/SupplierAuthProvider";
+
+const Login = lazy(() => import("../Pages/Login"));
+const AdminLogin = lazy(() => import("../Pages/AdminLogin"));
 
 const ChooseLogin = () => {
   const navigate = useNavigate();
   const { admin, loading: adminLoading } = useContext(AdminAuthContext);
-  const { supplier, loading: supplierLoading } = useContext(SupplierAuthContext); // Assuming you have this
+  const { supplier, loading: supplierLoading } = useContext(SupplierAuthContext);
 
-  // Redirect already logged-in users
+  const [activeTab, setActiveTab] = useState("supplier");
+
   useEffect(() => {
-    if (!adminLoading || !supplierLoading) {
-      if (admin) {
-        navigate("/admin/dashboard", { replace: true });
-      } else if (supplier) {
-        navigate("/home", { replace: true });
-      }
+    if (!adminLoading && !supplierLoading) {
+      if (admin) navigate("/admin/dashboard", { replace: true });
+      else if (supplier) navigate("/home", { replace: true });
     }
   }, [admin, supplier, adminLoading, supplierLoading, navigate]);
 
-  // Show loading while checking authentication
   if (adminLoading || supplierLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
         <p className="text-gray-600 text-lg">Loading...</p>
       </div>
     );
   }
 
-  const handleLoginChoice = (role) => {
-    if (role === "supplier") {
-      navigate("/login");
-    } else if (role === "admin") {
-      navigate("/admin-login");
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-80 text-center">
-        <h1 className="text-2xl font-semibold mb-6 text-gray-800">
-          Choose Login Type
+    <div className=" flex items-center justify-center bg-gray-100 px-4">
+      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6 sm:p-8">
+        <h1 className="capitalize text-2xl sm:text-3xl font-semibold mb-6 text-center text-gray-800">
+          {activeTab} Login
         </h1>
-        <button
-          onClick={() => handleLoginChoice("supplier")}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mb-4 transition-all"
-        >
-          Login as Supplier
-        </button>
-        <button
-          onClick={() => handleLoginChoice("admin")}
-          className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition-all"
-        >
-          Login as Admin
-        </button>
+
+        {/* Tabs */}
+        <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setActiveTab("supplier")}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "supplier"
+                ? "bg-blue-600 text-white shadow"
+                : "text-gray-600"
+            }`}
+          >
+            Supplier
+          </button>
+
+          <button
+            onClick={() => setActiveTab("admin")}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "admin"
+                ? "bg-green-600 text-white shadow"
+                : "text-gray-600"
+            }`}
+          >
+            Admin
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <Suspense fallback={<p className="text-center text-gray-500">Loading form...</p>}>
+          {activeTab === "supplier" && <Login />}
+          {activeTab === "admin" && <AdminLogin />}
+        </Suspense>
       </div>
     </div>
   );

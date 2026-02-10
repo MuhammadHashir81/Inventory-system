@@ -11,8 +11,8 @@ const AdminProductsProvider = ({ children }) => {
   const [homeTotalPages,setHomeTotalPages] = useState(1)
   const [totalProducts,setTotalProducts] = useState(0)
   const [totalLowStockProducts,setTotalLowStockProducts] = useState(0)
-  
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
+  
 
   // Get low products with pagination
   const lowProducts = async (page = 1, limit = 3) => {

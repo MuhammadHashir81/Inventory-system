@@ -1,66 +1,72 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Layout from "./Components/Layout";
-import Home from "./Pages/Home";
-import Login from "./Pages/Login";
-import AdminLogin from "./Pages/AdminLogin";
-const Dashboard = lazy(() => import("./Pages/Admin/AdminDashboard"));
-const ManageProducts = lazy(()=> import ("./Pages/Admin/ManageProducts"));
 import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
-const Debts = lazy(()=> import("./Pages/Debts"));
 import SupplierProtectedRoute from "./ProtectedRoute/SupplierProtectedRoute";
-import ChooseLogin from "./Pages/ChooseLogin";
-import AdminProductsProvider from './Components/Context/AdminProductsProvider';
-import "./App.css"
+
+
+// lazy pages
+const Home = lazy(() => import("./Pages/Home"));
+const Login = lazy(() => import("./Pages/Login"));
+const AdminLogin = lazy(() => import("./Pages/AdminLogin"));
+const ChooseLogin = lazy(() => import("./Pages/ChooseLogin"));
+const Debts = lazy(() => import("./Pages/Debts"));
+
+// admin lazy pages
+const Dashboard = lazy(() => import("./Pages/Admin/Dashboard"));
+const AdminDashboard = lazy(() => import("./Pages/Admin/AdminDashboard"));
+const ManageProducts = lazy(() => import("./Pages/Admin/ManageProducts"));
+const AddProduct = lazy(() => import("./Pages/Admin/AddProduct"));
+const TotalSales = lazy(() => import("./Pages/Admin/TotalSales"));
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+        <Toaster
+                position="bottom-center"
+              />
+      <Suspense fallback={<div className="h-screen w-screen flex items-center justify-center">Loading...</div>}>
+        <Routes>
 
-        {/* entry route */}
-        <Route path='/' element={<ChooseLogin />} />
-        {/* Supplier Protected Layout */}
-        <Route
-          path="/home"
-          element={
-            <SupplierProtectedRoute>
-              <Layout />
-            </SupplierProtectedRoute>
-          }
-        >
-          <Route index element={<Home />} />
-          <Route path="debts" element={ 
-            <Suspense fallback={<div>Loading...</div>}>
+          {/* entry */}
+          <Route path="/" element={<ChooseLogin />} />
 
-            <Debts />
-            </Suspense>
-            } />
-        </Route>
+          {/* supplier protected */}
+          <Route
+            path="/home"
+            element={
+              <SupplierProtectedRoute>
+                <Layout />
+              </SupplierProtectedRoute>
+            }
+          >
+            <Route index element={<Home />} />
+            <Route path="debts" element={<Debts />} />
+          </Route>
 
-        {/* Public Routes */}
-        <Route path="login" element={<Login />} />
-        <Route path="admin-login" element={<AdminLogin />} />
+          {/* public */}
+          <Route path="login" element={<ChooseLogin />} />
+          <Route path="admin-login" element={<ChooseLogin />} />
 
-        {/* Admin Dashboard */}
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute>
-              <Suspense fallback={<div>Loading...</div>}>
-                <Dashboard />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={
-            <Suspense fallback>
-
-            <ManageProducts fallback={<div>Loading...</div>}/>
-            </Suspense>
-            } />
-        </Route>
-      </Routes>
+          {/* admin protected */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="products" element={<ManageProducts />} />
+            <Route path="products/add" element={<AddProduct />} />
+            <Route path="sales" element={<TotalSales />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

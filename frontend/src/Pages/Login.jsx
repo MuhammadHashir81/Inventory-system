@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Toaster } from "react-hot-toast";
 const Login = () => {
+  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const { loginSupplier } = useContext(SupplierAuthContext);
@@ -12,17 +13,20 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true)
     try {
       const res = await loginSupplier(name, password);
       toast.success(res.message || "Login successful");
       navigate("/"); // redirect after login
     } catch (err) {
       toast.error(err.response?.data?.error || "Login failed");
+    }finally{
+      setLoading(false)
     }
   };
 
   return (
-    <div className="pt-24 min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex justify-center items-center px-4 sm:px-6 lg:px-8">
+    <div className="pt-24 min-h-screen bg-gradient-to-br from-blue-50 to-blue-100  px-4 sm:px-6 lg:px-8">
       <Toaster/>
       <div className="bg-white shadow-2xl rounded-2xl w-full max-w-md sm:max-w-lg md:max-w-md p-6 sm:p-8">
         <h2 className="text-2xl sm:text-3xl font-semibold text-center text-blue-700 mb-6">
@@ -61,8 +65,9 @@ const Login = () => {
           <button
             type="submit"
             className="bg-blue-600 hover:bg-blue-700 text-white py-2 sm:py-3 rounded-lg shadow-md transition-all duration-200 text-sm sm:text-base font-medium"
+            disabled={loading}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>

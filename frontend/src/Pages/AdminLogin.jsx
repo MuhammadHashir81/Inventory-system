@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { AdminAuthContext } from "../Components/Context/AdminAuthProvider";
 import toast from "react-hot-toast";
-import { Toaster } from "react-hot-toast";
+
 const AdminLogin = () => {
   const [adminName, setAdminName] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
@@ -30,8 +30,8 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="pt-24 min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex justify-center items-center px-4 sm:px-6 lg:px-8">
-        <Toaster/>
+    <div className="pt-24 min-h-screen bg-gradient-to-br from-blue-50 to-blue-100  px-4 sm:px-6 lg:px-8">
+     
       <div className="bg-white shadow-2xl rounded-2xl w-full max-w-md p-6 sm:p-8">
         <h2 className="text-2xl sm:text-3xl font-semibold text-center text-blue-700 mb-6">
           Admin <span className="text-blue-500">Login</span>
