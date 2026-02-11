@@ -5,6 +5,7 @@ import { Modal, Box, Typography, TextField, Button, Stack } from "@mui/material"
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const style = {
     position: "absolute",
@@ -182,7 +183,7 @@ const ManageProducts = () => {
 
     const handleUpdate = async () => {
         if (!selectedProduct.name || !selectedProduct.category || !selectedProduct.description) {
-            alert("All fields are required");
+            toast.error("Category, name and description are required");
             return;
         }
 
@@ -388,7 +389,7 @@ const ManageProducts = () => {
             <Modal open={isEditModalOpen} onClose={closeEditModal}>
                 <Box sx={style} className="max-h-[80vh] overflow-y-scroll">
                     <Typography variant="h6" mb={2}>Edit Product</Typography>
-                    <Stack spacing={2}>
+                    <Stack spacing={2} component="form" onSubmit={handleUpdate}>
 
                         <TextField
                             label="Cost Price"
@@ -404,6 +405,7 @@ const ManageProducts = () => {
                             value={selectedProduct?.name || ""}
                             onChange={handleChange}
                             fullWidth
+                            required
                         />
                         <TextField
                             label="Category"
@@ -411,6 +413,7 @@ const ManageProducts = () => {
                             value={selectedProduct?.category || ""}
                             onChange={handleChange}
                             fullWidth
+                            required
                         />
                         <TextField
                             label="Description"
@@ -418,6 +421,7 @@ const ManageProducts = () => {
                             value={selectedProduct?.description || ""}
                             onChange={handleChange}
                             fullWidth
+                            required
                         />
                         <TextField
                             label="Price (Johrabad)"
@@ -426,6 +430,7 @@ const ManageProducts = () => {
                             value={selectedProduct?.priceJohrabad || ""}
                             onChange={handleChange}
                             fullWidth
+                            required
                         />
                         <TextField
                             label="Price (Other Cities)"
@@ -434,6 +439,7 @@ const ManageProducts = () => {
                             value={selectedProduct?.priceOther || ""}
                             onChange={handleChange}
                             fullWidth
+                            required
                         />
                         <TextField
                             label="Inventory"
@@ -461,7 +467,7 @@ const ManageProducts = () => {
 
                         <Stack direction="row" spacing={2} justifyContent="flex-end">
                             <Button variant="outlined" onClick={closeEditModal}>Cancel</Button>
-                            <Button variant="contained" onClick={handleUpdate}>Update</Button>
+                            <Button variant="contained" type="submit">Update</Button>
                         </Stack>
                     </Stack>
                 </Box>
