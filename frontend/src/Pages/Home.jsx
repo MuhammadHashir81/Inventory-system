@@ -171,31 +171,25 @@ const Home = () => {
   }
 
   
-    const fetchDebts = async (page = 1, limit = 10) => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${apiUrl}/api/debts/get?page=${page}&limit=${limit}`);
-        console.log(res.data)
-        setTotalDebtPages(res.data.totalPages)
-        if (res.data.debts) setDebts(res.data.debts);
-      } catch (error) {
-        console.error("Error fetching debts:", error);
-      }
-      setLoading(false);
-    };
-
-
-
-
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchResults(query || cartQuery)
+      fetchResults(query)
     }, 300);
 
     return () => {
       clearTimeout(timer);
     }
-  }, [query, cartQuery]);
+  }, [query]);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchResults(cartQuery)
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    }
+  }, [cartQuery]);
 
 
 
@@ -388,7 +382,7 @@ const Home = () => {
           const res = await sellProducts(orderData);
           if (res.success) {
             await fetchSoldItems();
-            fetchDebts();
+            // fetchDebts();
             toast.success("Partial sale recorded!");
             closeModal();
           } else {
