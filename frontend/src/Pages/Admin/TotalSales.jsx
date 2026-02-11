@@ -1,6 +1,4 @@
-import { useContext, useState, useMemo, React } from "react";
-import { SoldItemsContext } from "../../Components/Context/SoldItemsProvider";
-import { AdminProductsContext } from "../../Components/Context/AdminProductsProvider";
+import { useState, useMemo, React, useEffect } from "react";
 import { Calendar, ChevronDown, Clock, DollarSign, Download, Edit, TrendingUp, Search, X, Plus, Trash2 } from "lucide-react";
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -10,9 +8,11 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Checkbox, FormControlLabel, Autocomplete, TextField } from '@mui/material';
 
+import axios from 'axios'
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
+
 const TotalSales = () => {
-  const { soldItems, fetchSoldItems, deleteSoldItems } = useContext(SoldItemsContext);
-  const { products } = useContext(AdminProductsContext);
+  const [soldItems, setSoldItems] = useState([]);
   const [expandedSale, setExpandedSale] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("all");
   const [editingInvoice, setEditingInvoice] = useState(null);
@@ -22,6 +22,9 @@ const TotalSales = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [shopSearchInput, setShopSearchInput] = useState("");
   const [productSearchInput, setProductSearchInput] = useState("");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false)
+
 
 
   const handleClose = () => {
@@ -290,10 +293,42 @@ const TotalSales = () => {
     return `INV${timestamp}${random}`.slice(0, 12);
   };
 
+
+  const deleteSoldItems = async (id) => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/sold-items/delete/${id}`);
+
+      if (res.data.soldItems) setSoldItems(res.data.soldItems);
+
+    } catch (error) {
+      console.error("Fetch sold items error:", error);
+    }
+  };
+
   const handleDeleteSoldItem = async (id) => {
     await deleteSoldItems(id);
     fetchSoldItems();
   }
+
+
+
+  const fetchSoldItems = async () => {
+    setLoading(true)
+    try {
+      const res = await axios.get(`${apiUrl}/api/sold-items/get`);
+      console.log("sold items are", res.data);
+      if (res.data.soldItems) setSoldItems(res.data.soldItems);
+      setLoading(false)
+      return res.data.soldItems
+
+    } catch (error) {
+      console.error("Fetch sold items error:", error);
+    }
+  };
+  useEffect(() => {
+    fetchSoldItems()
+  }, [])
+
 
   const downloadInvoiceWord = (item) => {
     const dataToUse = editingInvoice === item._id ? invoiceData : item;
@@ -527,6 +562,11 @@ const TotalSales = () => {
   if (soldItems.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex items-center justify-center">
+        {
+          loading && (
+            <h4 className='text-2xl font-semibold'>loading...</h4>
+          )
+        }
         <div>
           <Dialog
             open={deleteOpen}
@@ -552,7 +592,7 @@ const TotalSales = () => {
           </Dialog>
         </div>
 
-        <div className="text-center bg-white rounded-2xl shadow-lg p-12 max-w-md">
+        <div className={` ${loading || soldItems.length > 0 ? 'hidden' : 'block'} text-center bg-white rounded-2xl shadow-lg p-12 max-w-md`}>
           <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1062,8 +1102,8 @@ const TotalSales = () => {
                           </p>
                         )}
                         <span className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.isDebtCleared
-                            ? "bg-green-100 text-green-700"
-                            : "bg-orange-100 text-orange-700"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-orange-100 text-orange-700"
                           }`}>
                           {item.isDebtCleared ? "✓ Paid" : "⏳ Pending"}
                         </span>
@@ -1155,7 +1195,7 @@ const TotalSales = () => {
                       <div className="flex justify-between items-center text-xs sm:text-sm">
                         <span className="text-gray-700 font-medium">License Number</span>
                         <span className="font-bold text-gray-600">
-                           {item.licenseNo || 'N/A'}
+                          {item.licenseNo || 'N/A'}
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-xs sm:text-sm pt-2 border-t border-gray-300">

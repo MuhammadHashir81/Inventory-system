@@ -3,7 +3,6 @@ import React, { useState, useContext } from "react";
 import { SupplierAuthContext } from "../Components/Context/SupplierAuthProvider";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Toaster } from "react-hot-toast";
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -17,7 +16,7 @@ const Login = () => {
     try {
       const res = await loginSupplier(name, password);
       toast.success(res.message || "Login successful");
-      navigate("/"); // redirect after login
+      navigate("/home"); // redirect after login
     } catch (err) {
       toast.error(err.response?.data?.error || "Login failed");
     }finally{
@@ -27,7 +26,6 @@ const Login = () => {
 
   return (
     <div className="pt-24 min-h-screen bg-gradient-to-br from-blue-50 to-blue-100  px-4 sm:px-6 lg:px-8">
-      <Toaster/>
       <div className="bg-white shadow-2xl rounded-2xl w-full max-w-md sm:max-w-lg md:max-w-md p-6 sm:p-8">
         <h2 className="text-2xl sm:text-3xl font-semibold text-center text-blue-700 mb-6">
           Supplier <span className="text-blue-500">Login</span>

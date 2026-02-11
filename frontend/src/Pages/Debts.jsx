@@ -1,11 +1,10 @@
-import React, { useContext, useState, useMemo, useEffect } from "react";
-import { DebtsContext } from "../Components/Context/DebtsProvider";
+import React, {  useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Toaster } from "react-hot-toast";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
 const Debts = () => {
-  const { debts, setDebts, makePayment } = useContext(DebtsContext);
+    const [debts, setDebts] = useState([]);
   const [paymentInput, setPaymentInput] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [queryDebts, setQueryDebts] = useState("")
@@ -17,6 +16,48 @@ const Debts = () => {
 
 
   const apiUrl = import.meta.env.VITE_BACKEND_URL;
+
+    // fetch sold items
+  const fetchSoldItems = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/sold-items/get`);
+      console.log("sold items are", res.data);
+      if (res.data.soldItems) setSoldItems(res.data.soldItems); 
+
+      return res.data.soldItems
+    } catch (error) {
+      console.error("Fetch sold items error:", error);
+    }
+  };
+
+    const makePayment = async (id, paymentAmount) => {
+    try {
+      const res = await axios.put(`${apiUrl}/api/debts/update/${id}`, {
+        payment: paymentAmount,
+      });
+
+      if (res.data.success) {
+        if (!res.data.debt) {
+          // Debt fully paid & deleted, remove from state
+          setDebts((prev) => prev.filter((d) => d._id !== id));
+        } else {
+          // Update partially paid debt
+          setDebts((prev) =>
+            prev.map((debt) => (debt._id === id ? res.data.debt : debt))
+          );
+        }
+
+        // Refresh sold items
+        await fetchSoldItems();
+      }
+
+      return res.data;
+    } catch (error) {
+      console.error("Error updating payment:", error);
+      return { success: false, message: "Payment failed" };
+    }
+  };
+
 
 
   useEffect(()=>{
@@ -119,7 +160,6 @@ const Debts = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="container mx-auto max-w-7xl">
-        <Toaster />
         <h1 className="text-4xl font-bold mb-10 text-center text-gray-800">Customer Debts Overview</h1>
 
         {/* Search Bar */}

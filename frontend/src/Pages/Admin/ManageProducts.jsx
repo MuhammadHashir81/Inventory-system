@@ -1,9 +1,7 @@
 // ManageProducts.jsx
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState,  useEffect } from "react";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
-import { AdminProductsContext } from "../../Components/Context/AdminProductsProvider";
 import { Modal, Box, Typography, TextField, Button, Stack } from "@mui/material";
-import toast, { Toaster } from "react-hot-toast";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -27,7 +25,6 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 
 const ManageProducts = () => {
-    const { deleteProduct } = useContext(AdminProductsContext);
     const [homeTotalPages, setHomeTotalPages] = useState(1);
     const [totalProducts, setTotalProducts] = useState(1);
     const [products, setProducts] = useState([]);
@@ -71,7 +68,21 @@ const ManageProducts = () => {
         }
     };
 
-
+  const deleteProduct = async (id) => {
+    try {
+      const res = await axios.delete(`${apiUrl}/api/admin/products/delete/${id}`);
+      if (res.data.message) {
+        await fetchProducts();
+      }
+      return res.data;
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error deleting product"
+      };
+    }
+  };
 
     const fetchResults = async (search) => {
         if (!search) {

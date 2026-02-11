@@ -1,7 +1,7 @@
 // frontend/src/Components/Context/SupplierAuthProvider.jsx
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
 export const SupplierAuthContext = createContext();
 
 
@@ -10,6 +10,7 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 const SupplierAuthProvider = ({ children }) => {
   const [supplier, setSupplier] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
 
   // ✅ Check supplier authentication on load
   useEffect(() => {
@@ -34,6 +35,7 @@ const SupplierAuthProvider = ({ children }) => {
       { withCredentials: true }
     );
     setSupplier(res.data.supplier || { name }); // set supplier
+    navigate('/home')
     return res.data;
   };
 

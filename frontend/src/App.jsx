@@ -1,10 +1,8 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 import Layout from "./Components/Layout";
 import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
 import SupplierProtectedRoute from "./ProtectedRoute/SupplierProtectedRoute";
-
 
 // lazy pages
 const Home = lazy(() => import("./Pages/Home"));
@@ -23,7 +21,7 @@ import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
-    <BrowserRouter>
+    <>
       <Toaster
         position="bottom-center"
       />
@@ -37,6 +35,7 @@ function App() {
           <Route
             path="/home"
             element={
+
               <SupplierProtectedRoute>
                 <Layout />
               </SupplierProtectedRoute>
@@ -48,15 +47,16 @@ function App() {
 
           {/* public */}
           <Route path="login" element={<ChooseLogin />} />
-          <Route path="admin-login" element={<ChooseLogin />} />
+          <Route path="admin-login" element={<ChooseLogin/>}/>
 
           {/* admin protected */}
           <Route
             path="/admin"
             element={
+
               <ProtectedRoute>
                 <AdminDashboard />
-              </ProtectedRoute>
+                </ProtectedRoute>
             }
           >
             <Route index element={<Dashboard />} />
@@ -67,7 +67,7 @@ function App() {
           </Route>
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </>
   );
 }
 

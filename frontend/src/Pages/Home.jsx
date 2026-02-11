@@ -1,11 +1,7 @@
 import toast from "react-hot-toast";
-import { Toaster } from "react-hot-toast";
-import React, { useContext, useState, useMemo, useEffect, useCallback } from "react";
-import { AdminProductsContext } from "../Components/Context/AdminProductsProvider";
-import { SoldItemsContext } from "../Components/Context/SoldItemsProvider";
-import { DebtsContext } from "../Components/Context/DebtsProvider";
+import React, {  useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Oval } from 'react-loader-spinner'
+import axios from "axios";
 
 import {
   Modal, Box, Typography, TextField, Button,
@@ -39,10 +35,15 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Home = () => {
 
-  const { totalProducts, totalLowStockProducts, products, setProducts, fetchProducts, homeTotalPages, sellProducts, lowProducts } = useContext(AdminProductsContext);
-  const { fetchSoldItems } = useContext(SoldItemsContext);
-  const { fetchDebts } = useContext(DebtsContext);
+  const [products, setProducts] = useState([]);
   const [homeCurrentPage, setHomeCurrentPage] = useState(1)
+  const [homeTotalPages, setHomeTotalPages] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [totalLowStockProducts, setTotalLowStockProducts] = useState(0)
+  const [getLowStockProducts, setLowStockProducts] = useState([]);
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading,setLoading] = useState(false)
+
 
   // Cart items state - array of products with quantities
   const [cartItems, setCartItems] = useState([]);
@@ -71,19 +72,93 @@ const Home = () => {
   const [results, setResults] = useState('')
 
   // quering the results
-
+  const fetchProducts = async (page = 1, limit = 10) => {
+    setLoading(true)
+    try {
+      const res = await axios.get(`${apiUrl}/api/admin/products/get?page=${page}&limit=${limit}`);
+      console.log("this is fetchProducts here",res.data.products);
+      if (res.data.products) {
+        setProducts([...res.data.products]);
+        setHomeTotalPages(res.data.totalPages)
+        setTotalProducts(res.data.totalCount)
+      }
+      return res.data.products;
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally{
+      setLoading(false)
+    }
+  };
 
 
   useEffect(() => {
-    lowProducts();   // fetch low stock count
-  }, []);
+    fetchProducts()
+  }, [])
+
+
+  const lowProducts = async (page = 1, limit = 3) => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/admin/products/low-stock-products?page=${page}&limit=${limit}`);
+      setLowStockProducts(response.data.getProducts);
+      setTotalPages(response.data.totalPages)
+      setTotalLowStockProducts(response.data.totalCount)
+
+      console.log("these are total pages ", totalPages)
+      console.log("these are low stock products", response.data.getProducts);
+    } catch (error) {
+      console.error("Error fetching low stock products:", error);
+    }
+  };
+
+  useEffect(() => {
+    lowProducts()
+
+  }, [])
+
+
+    // fetch sold items
+  const fetchSoldItems = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/sold-items/get`);
+      console.log("sold items are", res.data);
+      if (res.data.soldItems) setSoldItems(res.data.soldItems); 
+
+      return res.data.soldItems
+    } catch (error) {
+      console.error("Fetch sold items error:", error);
+    }
+  };
+
+
+
+
+
+  const sellProducts = async (orderData) => {
+    try {
+      const res = await axios.post(`${apiUrl}/api/sold-items/sell`, orderData);
+      if (res.data.success) {
+        await fetchProducts();
+      }
+      return res.data;
+    } catch (error) {
+      console.error("Error selling products:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error processing sale"
+      };
+    }
+  };
+
+  // Fetch all products
+
+
 
 
   const fetchResults = async (search) => {
-    
+
     if (!search) {
       setResults([]);
-      
+
       return;
     }
     setIsSearching(true)
@@ -94,6 +169,22 @@ const Home = () => {
     setIsSearching(false)
     setResults(data.items || []);
   }
+
+  
+    const fetchDebts = async (page = 1, limit = 10) => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${apiUrl}/api/debts/get?page=${page}&limit=${limit}`);
+        console.log(res.data)
+        setTotalDebtPages(res.data.totalPages)
+        if (res.data.debts) setDebts(res.data.debts);
+      } catch (error) {
+        console.error("Error fetching debts:", error);
+      }
+      setLoading(false);
+    };
+
+
 
 
   useEffect(() => {
@@ -173,7 +264,7 @@ const Home = () => {
   const getStockStatus = (inventory) => {
     if (inventory > 10) return { label: "In Stock", color: "success", icon: "✓" };
     if (inventory > 0) return { label: "Low Stock", color: "warning", icon: "!" };
-    return { label: "Out of Stock", color: "error", icon: "✕" };
+    return { label: "low stock products", color: "error", icon: "✕" };
   };
 
   const calculateTotal = () => {
@@ -335,14 +426,13 @@ const Home = () => {
 
   }
 
-  const availableProducts = products.filter(p => p.inventory > 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      
 
       <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
-        <Toaster />
-        
+
 
         {/* Header Section */}
         <Fade in timeout={600}>
@@ -404,7 +494,7 @@ const Home = () => {
 
               {/* Stats Bar */}
               {displayProducts.length > 0 && (
-                <div className="mt-8 flex flex-wrap justify-center gap-4">
+                <div className="mt-8 flex flex-wrap justify-center gap-4 ">
                   <Chip
                     label={`${totalProducts} Products`}
                     sx={{ bgcolor: 'rgba(59, 130, 246, 0.1)', color: 'rgb(37, 99, 235)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
@@ -414,17 +504,17 @@ const Home = () => {
                     sx={{ bgcolor: 'rgba(34, 197, 94, 0.1)', color: 'rgb(22, 163, 74)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
                   /> */}
                   <Chip
-                    label={`${totalLowStockProducts} Out of Stock`}
+                    label={`${totalLowStockProducts} low stock products`}
                     sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(220, 38, 38)', fontWeight: 600, px: 1, fontSize: '0.875rem' }}
                   />
-                  
+
                 </div>
               )}
               {
-          isSearching && (
-           <h4 className="absolute left-[50%] font-semibold text-xl">loading...</h4>
-          )
-        }
+                isSearching && (
+                  <h4 className="absolute left-[50%] font-semibold text-xl">loading...</h4>
+                )
+              }
 
             </div>
 
@@ -435,7 +525,7 @@ const Home = () => {
         {/* Products Grid */}
         {products.length === 0 ? (
           <Fade in timeout={800}>
-            <div className="text-center py-10">
+            <div className={` ${loading ? 'hidden' :'block'} text-center py-10`}>
               <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mb-6 shadow-inner">
                 <Package className="w-12 h-12 text-gray-400" />
               </div>
@@ -445,7 +535,7 @@ const Home = () => {
           </Fade>
         ) : displayProducts.length === 0 ?.length === 0 ? (
           <Fade in timeout={800}>
-            <div className="text-center py-10">
+            <div className="text-center py-10 px-10">
               <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mb-6 shadow-inner">
                 <Search className="w-12 h-12 text-gray-400" />
               </div>
@@ -462,7 +552,7 @@ const Home = () => {
           </Fade>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            
+
 
             {displayProducts.map((product, index) => {
               const stockStatus = getStockStatus(product.inventory);
@@ -568,7 +658,7 @@ const Home = () => {
                         </Button>
                       ) : (
                         <Button variant="outlined" fullWidth disabled sx={{ borderRadius: 2, py: 1.5, fontWeight: 600, textTransform: 'none', fontSize: '0.95rem' }}>
-                          Out of Stock
+                          low stock products 
                         </Button>
                       )}
                     </CardActions>

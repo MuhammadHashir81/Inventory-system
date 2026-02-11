@@ -7,26 +7,9 @@ const Login = lazy(() => import("../Pages/Login"));
 const AdminLogin = lazy(() => import("../Pages/AdminLogin"));
 
 const ChooseLogin = () => {
-  const navigate = useNavigate();
-  const { admin, loading: adminLoading } = useContext(AdminAuthContext);
-  const { supplier, loading: supplierLoading } = useContext(SupplierAuthContext);
 
   const [activeTab, setActiveTab] = useState("supplier");
 
-  useEffect(() => {
-    if (!adminLoading && !supplierLoading) {
-      if (admin) navigate("/admin/dashboard", { replace: true });
-      else if (supplier) navigate("/home", { replace: true });
-    }
-  }, [admin, supplier, adminLoading, supplierLoading, navigate]);
-
-  if (adminLoading || supplierLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-        <p className="text-gray-600 text-lg">Loading...</p>
-      </div>
-    );
-  }
 
   return (
     <div className=" flex items-center justify-center bg-gray-100 px-4">

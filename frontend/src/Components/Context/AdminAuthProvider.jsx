@@ -13,8 +13,10 @@ const AdminAuthProvider = ({ children }) => {
   const verifyAdmin = async () => {
     try {
       const { data } = await axios.get(`${apiUrl}/api/admin/verify`, {
+
         withCredentials: true,
       });
+      console.log("I am verifying admin",data)
       setAdmin(data.admin);
     } catch {
       setAdmin(null);

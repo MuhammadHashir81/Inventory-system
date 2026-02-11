@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Package, TrendingUp, DollarSign, TriangleAlert, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useContext } from 'react'
-import { AdminProductsContext } from '../../Components/Context/AdminProductsProvider'
-import { SoldItemsContext } from '../../Components/Context/SoldItemsProvider'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+
+
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Dashboard = () => {
-  const { fetchProducts, products, getLowStockProducts, lowProducts,totalPages,totalProducts,totalLowStockProducts } = useContext(AdminProductsContext)
-  const { soldItems } = useContext(SoldItemsContext)
   const navigate = useNavigate()
 
   const [todaySales, setTodaySales] = useState('0')
@@ -17,13 +16,41 @@ const Dashboard = () => {
   const [latestProductPrice, setLatestProductPrice] = useState('0')
   const [latestProductName, setLatestProductName] = useState('no product')
   const [currentPage, setCurrentPage] = useState(1)
+  const [lowStockProducts, setLowStockProducts] = useState([]);
   const [isLoadingLowStock, setIsLoadingLowStock] = useState(false)
+  const [totalLowStockProducts, setTotalLowStockProducts] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [soldItems, setSoldItems] = useState([]);
 
   const today = new Date()
   const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
   // Fetch low stock products with pagination
+
+  const fetchProducts = async (page = 1, limit = 10) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${apiUrl}/api/admin/products/get?page=${page}&limit=${limit}`);
+      console.log(res.data.products);
+      if (res.data.products) {
+        setTotalProducts(res.data.totalCount)
+      }
+      return res.data.products;
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts()
+  }, [totalProducts])
+
+
   useEffect(() => {
     const fetchLowStockProducts = async () => {
       setIsLoadingLowStock(true)
@@ -38,6 +65,22 @@ const Dashboard = () => {
 
     fetchLowStockProducts()
   }, [currentPage])
+
+  const fetchSoldItems = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/sold-items/get`);
+      console.log("sold items are", res.data);
+      if (res.data.soldItems) setSoldItems(res.data.soldItems);
+
+      return res.data.soldItems
+    } catch (error) {
+      console.error("Fetch sold items error:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSoldItems
+  }, [soldItems])
 
 
   useMemo(() => {
@@ -58,36 +101,56 @@ const Dashboard = () => {
     setTodaySales(getTodaySales)
   }, [soldItems])
 
-  
+
 
   useMemo(() => {
     const subTotal = soldItems.reduce((acc, item) => acc + (item.totalAmount - item.remainingAmount), 0)
     setRevenue(subTotal)
   }, [soldItems])
 
-useEffect(() => {
-  if (!soldItems || soldItems.length === 0) return;
-  
-  const getTodaySales = soldItems.filter(
-    (item) => new Date(item.createdAt) >= startOfDay && new Date(item.createdAt) < endOfDay
-  );
+  useEffect(() => {
+    if (!soldItems || soldItems.length === 0) return;
 
-  if (getTodaySales && getTodaySales.length > 0) {
-    const getPrice = getTodaySales[0].totalAmount;
-    setLatestProductPrice(getPrice);
+    const getTodaySales = soldItems.filter(
+      (item) => new Date(item.createdAt) >= startOfDay && new Date(item.createdAt) < endOfDay
+    );
 
-    const intervalId = setInterval(() => {
-      const saleTime = new Date(getTodaySales[0].createdAt).getTime();
-      const timeAtTheMoment = new Date().getTime();
-      const timeDifference = timeAtTheMoment - saleTime;
-      const getTimeDifference = Math.floor(timeDifference / 60000);
-      setLastSale(getTimeDifference);
-    }, 1000);
+    if (getTodaySales && getTodaySales.length > 0) {
+      const getPrice = getTodaySales[0].totalAmount;
+      setLatestProductPrice(getPrice);
 
-    // ✅ Cleanup function to clear interval
-    return () => clearInterval(intervalId);
-  }
-}, [soldItems]);
+      const intervalId = setInterval(() => {
+        const saleTime = new Date(getTodaySales[0].createdAt).getTime();
+        const timeAtTheMoment = new Date().getTime();
+        const timeDifference = timeAtTheMoment - saleTime;
+        const getTimeDifference = Math.floor(timeDifference / 60000);
+        setLastSale(getTimeDifference);
+      }, 1000);
+
+      // ✅ Cleanup function to clear interval
+      return () => clearInterval(intervalId);
+    }
+  }, [soldItems]);
+
+
+  // Get low products with pagination
+  const lowProducts = async (page = 1, limit = 3) => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/admin/products/low-stock-products?page=${page}&limit=${limit}`);
+      setLowStockProducts(response.data.getProducts);
+      setTotalPages(response.data.totalPages)
+      setTotalLowStockProducts(response.data.totalCount)
+
+      console.log("these are total pages ", totalPages)
+      console.log("these are low stock products", response.data.getProducts);
+    } catch (error) {
+      console.error("Error fetching low stock products:", error);
+    }
+  };
+
+  useEffect(() => {
+    lowProducts()
+  }, [])
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -106,7 +169,7 @@ useEffect(() => {
       <h1 className='font-bold text-2xl sm:text-3xl lg:text-4xl'>Dashboard Overview</h1>
       <div className='mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
 
-        <div onClick={()=>navigate("/admin/sales")} className='flex items-center justify-between bg-gray-50 rounded-xl py-4 w-full px-6'>
+        <div onClick={() => navigate("/admin/sales")} className='flex items-center justify-between bg-gray-50 rounded-xl py-4 w-full px-6'>
           <div className='mt-0.5 flex flex-col gap-1'>
             <p className='text-base sm:text-lg '>Today's Sales</p>
             <h3 className='text-2xl sm:text-3xl font-semibold'>PKR {todaySalesPrice.toLocaleString()}</h3>
@@ -118,7 +181,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <div onClick={()=>navigate("/admin/products")} className='flex items-center justify-between bg-gray-50 rounded-xl w-full px-6 py-4'>
+        <div onClick={() => navigate("/admin/products")} className='flex items-center justify-between bg-gray-50 rounded-xl w-full px-6 py-4'>
           <div className='mt-0.5 flex flex-col gap-1'>
             <p className='text-base sm:text-lg '>Total Products</p>
             <h3 className='text-2xl sm:text-3xl font-semibold'>{totalProducts}</h3>
@@ -156,12 +219,12 @@ useEffect(() => {
           </div>
 
           <div className='flex-1'>
-            {isLoadingLowStock ? (  
+            {isLoadingLowStock ? (
               <div className='flex items-center justify-center h-full'>
                 <p className='text-gray-500'>Loading...</p>
               </div>
-            ) : getLowStockProducts.length > 0 ? (
-              getLowStockProducts.map((item, index) => (
+            ) : lowStockProducts.length > 0 ? (
+              lowStockProducts.map((item, index) => (
                 <div key={index} className='bg-red-500/10 mt-6 px-4 rounded-md py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2'>
                   <div>
                     <p className='text-base sm:text-lg font-semibold'>{item.name}</p>
@@ -180,37 +243,35 @@ useEffect(() => {
             )}
           </div>
 
-            <div className='flex items-center justify-between mt-6 pt-4 border-t border-gray-200 '>
-              <button
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
-                  currentPage === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-red-500/10 text-red-700 hover:bg-red-500/20'
+          <div className='flex items-center justify-between mt-6 pt-4 border-t border-gray-200 '>
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-red-500/10 text-red-700 hover:bg-red-500/20'
                 }`}
-              >
-                <ChevronLeft size={18} />
-                <span className='text-sm font-medium'>Previous</span>
-              </button>
+            >
+              <ChevronLeft size={18} />
+              <span className='text-sm font-medium'>Previous</span>
+            </button>
 
-              <span className='text-sm text-gray-600'>
-                Page {currentPage} of {totalPages}
-              </span>
+            <span className='text-sm text-gray-600'>
+              Page {currentPage} of {totalPages}
+            </span>
 
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
-                  currentPage === totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-red-500/10 text-red-700 hover:bg-red-500/20'
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-red-500/10 text-red-700 hover:bg-red-500/20'
                 }`}
-              >
-                <span className='text-sm font-medium'>Next</span>
-                <ChevronRight size={18} />
-              </button>
-            </div>
+            >
+              <span className='text-sm font-medium'>Next</span>
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
 
         <div className='bg-white/70 shadow-sm rounded-xl min-h-[350px] px-4 py-8'>
