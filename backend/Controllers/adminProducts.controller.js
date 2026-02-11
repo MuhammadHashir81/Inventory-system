@@ -48,6 +48,7 @@
       const products = await Product.find()
         .skip(skip)
         .limit(limit)
+        .sort({ _id: -1 })
         
       res.status(200).json({
         totalPages: Math.ceil(totalCount / limit),
