@@ -228,7 +228,7 @@ const ManageProducts = () => {
               <th className="px-4 sm:px-6 py-2">Price (Johrabad)</th>
               <th className="px-4 sm:px-6 py-2">Price (Other Cities)</th>
               <th className="px-4 sm:px-6 py-2">Inventory</th>
-              <th className="px-4 sm:px-6 py-2">Total Cost</th>
+              <th className="px-4 sm:px-6 py-2">Total Stock (Rs)</th>
               <th className="px-4 sm:px-6 py-2">Sold</th>
               <th className="px-4 sm:px-6 py-2">Bath no</th>
               <th className="px-4 sm:px-6 py-2">Cost Price</th>
