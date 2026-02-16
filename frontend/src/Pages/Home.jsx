@@ -98,13 +98,24 @@ const Home = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchResults(query || cartQuery)
+      fetchResults(query)
     }, 300);
 
     return () => {
       clearTimeout(timer);
     }
-  }, [query, cartQuery]);
+  }, [query]);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchResults(cartQuery)
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    }
+  }, [cartQuery]);
+
 
 
 
