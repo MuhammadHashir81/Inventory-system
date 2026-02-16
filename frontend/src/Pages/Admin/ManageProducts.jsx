@@ -318,7 +318,7 @@ const ManageProducts = () => {
       <div className="bg-blue-200 flex justify-center mt-4">
 
       
-        <p className="text-xl font-bold"> Total Inventory(Rs){totalCostOfAllProducts}</p>
+        <p className="text-`xl font-bold"> Total Inventory(Rs) PKR {totalCostOfAllProducts}</p>
 
       </div>
       <div className={` ${query.trim() ? 'hidden' : 'block'} flex items-center justify-center space-x-4 mt-10`}>
