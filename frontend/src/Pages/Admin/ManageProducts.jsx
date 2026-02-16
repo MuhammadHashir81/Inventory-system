@@ -176,6 +176,7 @@ const ManageProducts = () => {
 
   const displayProducts = query ? results : products
 
+
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100">
          
@@ -227,6 +228,7 @@ const ManageProducts = () => {
               <th className="px-4 sm:px-6 py-2">Price (Johrabad)</th>
               <th className="px-4 sm:px-6 py-2">Price (Other Cities)</th>
               <th className="px-4 sm:px-6 py-2">Inventory</th>
+              <th className="px-4 sm:px-6 py-2">Total Cost</th>
               <th className="px-4 sm:px-6 py-2">Sold</th>
               <th className="px-4 sm:px-6 py-2">Bath no</th>
               <th className="px-4 sm:px-6 py-2">Cost Price</th>
@@ -251,6 +253,7 @@ const ManageProducts = () => {
                   Rs. {product.price?.other ?? "N/A"}
                 </td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.inventory}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">{product?.inventory * product?.price.johrabad}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.sold ?? 0}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.batchNo ?? 0}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.costPrice ?? 0}</td>

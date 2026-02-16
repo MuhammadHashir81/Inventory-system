@@ -45,6 +45,8 @@
       const products = await Product.find()
         .skip(skip)
         .limit(limit)
+
+        
         
       res.status(200).json({
         totalPages: Math.ceil(totalCount / limit),
