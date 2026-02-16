@@ -176,6 +176,10 @@ const ManageProducts = () => {
 
   const displayProducts = query ? results : products
 
+  const totalCostOfAllProducts = displayProducts.reduce((sum,product)=>{
+    return sum + product.price.johrabad
+  },0)
+
 
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100">
@@ -311,7 +315,12 @@ const ManageProducts = () => {
           </div>
         ))}
       </div>
+      <div className="bg-blue-200 flex justify-center mt-4">
 
+      
+        <p className="text-xl font-bold"> Total Inventory(Rs){totalCostOfAllProducts}</p>
+
+      </div>
       <div className={` ${query.trim() ? 'hidden' : 'block'} flex items-center justify-center space-x-4 mt-10`}>
         <div className="text-blue-500">
           <button
@@ -320,6 +329,7 @@ const ManageProducts = () => {
             className={`flex  px-3 py-2  rounded-md ${homeCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-200 '}`}
 
           >
+            
             <ChevronLeft />
             <span>Previous</span>
 
