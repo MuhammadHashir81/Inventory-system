@@ -54,18 +54,28 @@ const ManageProducts = () => {
   const fetchAllProducts = async() => {
     const response = await fetch(`${apiUrl}/api/admin/products/get-all`)
     const data = await response.json()
-    console.log(data.products)
     setTotalCostOfAllProducts(data.products)
     
   }
-    const totalPrice =  totalCostOfAllProducts.reduce((sum,product)=>{
-    return sum + (product.price.johrabad * product.inventory) 
+    const totalPrice = totalCostOfAllProducts.reduce((sum, product) =>
+  sum + ((product.inventory ?? 0) * (product.costPrice ?? 0)),
+0)
+
+  const totalPriceJohrabad = totalCostOfAllProducts.reduce((sum,product)=>{
+    return sum + (product.inventory * product.price.johrabad)
   },0)
 
+    const totalPriceOtherCities = totalCostOfAllProducts.reduce((sum,product)=>{
+    return sum + (product.inventory * product.price.other)
+  },0)
+
+  console.log("thisis total price",totalPrice)
 
   useEffect(()=>{
     fetchAllProducts()
   },[products])
+
+
   const fetchResults = async (search) => {
     if (!search) {
       setResults([]);
@@ -242,14 +252,14 @@ const ManageProducts = () => {
             <tr className="bg-blue-50 text-gray-700 uppercase text-xs sm:text-sm tracking-wider">
               <th className="px-4 sm:px-6 py-2 rounded-tl-lg">#</th>
               <th className="px-4 sm:px-6 py-2">Name</th>
-              <th className="px-4 sm:px-6 py-2">Category</th>
+              <th className="px-4 sm:px-6 py-2">Cost Price</th>
               <th className="px-4 sm:px-6 py-2">Price (Johrabad)</th>
               <th className="px-4 sm:px-6 py-2">Price (Other Cities)</th>
               <th className="px-4 sm:px-6 py-2">Inventory</th>
               <th className="px-4 sm:px-6 py-2">Total Stock (Rs)</th>
+              <th className="px-4 sm:px-6 py-2">Category</th>
               <th className="px-4 sm:px-6 py-2">Sold</th>
               <th className="px-4 sm:px-6 py-2">Bath no</th>
-              <th className="px-4 sm:px-6 py-2">Cost Price</th>
               <th className="px-4 sm:px-6 py-2 text-center rounded-tr-lg">Actions</th>
             </tr>
           </thead>
@@ -263,7 +273,7 @@ const ManageProducts = () => {
                 <td className="px-4 sm:px-6 py-2 text-gray-700">{(homeCurrentPage - 1) * ITEMS_PER_PAGE + index + 1}
                 </td>
                 <td className="px-4 sm:px-6 py-2 font-medium text-gray-800">{product.name}</td>
-                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.category}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.costPrice ?? 0}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">
                   Rs. {product.price?.johrabad ?? "N/A"}
                 </td>
@@ -271,10 +281,14 @@ const ManageProducts = () => {
                   Rs. {product.price?.other ?? "N/A"}
                 </td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.inventory}</td>
-                <td className="px-4 sm:px-6 py-2 text-gray-600">{product?.inventory * product?.price.johrabad}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">
+                  {(product?.inventory ?? 0) * (product?.costPrice ?? 0)}
+</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.category}</td>
+                
+                
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.sold ?? 0}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.batchNo ?? 0}</td>
-                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.costPrice ?? 0}</td>
                 <td className="px-2 sm:px-6 py-2 text-center flex justify-center gap-2 sm:gap-3">
                   <button
                     className="text-blue-600 hover:text-blue-800 transition-all"
@@ -331,10 +345,20 @@ const ManageProducts = () => {
       </div>
       <div className="bg-blue-200 flex justify-center mt-4">
 
-      
-        <p className="text-`xl font-bold"> Total Inventory(Rs) PKR {totalPrice}</p>
-
+        <p className="text-`xl font-bold"> Total Inventory(Cost Price) PKR {totalPrice}</p>
       </div>
+      <div className="bg-blue-200 flex justify-center mt-4">
+
+      
+        <p className="text-`xl font-bold"> Total Inventory(Johrabad) PKR {totalPriceJohrabad}</p>
+      </div>
+
+      <div className="bg-blue-200 flex justify-center mt-4">
+
+        <p className="text-`xl font-bold"> Total Inventory(Other Cities) PKR {totalPriceOtherCities}</p>
+      </div>
+
+
       <div className={` ${query.trim() ? 'hidden' : 'block'} flex items-center justify-center space-x-4 mt-10`}>
         <div className="text-blue-500">
           <button
