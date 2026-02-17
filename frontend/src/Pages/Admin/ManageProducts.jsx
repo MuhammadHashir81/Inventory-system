@@ -252,10 +252,10 @@ const ManageProducts = () => {
             <tr className="bg-blue-50 text-gray-700 uppercase text-xs sm:text-sm tracking-wider">
               <th className="px-4 sm:px-6 py-2 rounded-tl-lg">#</th>
               <th className="px-4 sm:px-6 py-2">Name</th>
+              <th className="px-4 sm:px-6 py-2">Inventory</th>
               <th className="px-4 sm:px-6 py-2">Cost Price</th>
               <th className="px-4 sm:px-6 py-2">Price (Johrabad)</th>
               <th className="px-4 sm:px-6 py-2">Price (Other Cities)</th>
-              <th className="px-4 sm:px-6 py-2">Inventory</th>
               <th className="px-4 sm:px-6 py-2">Total Stock (Rs)</th>
               <th className="px-4 sm:px-6 py-2">Category</th>
               <th className="px-4 sm:px-6 py-2">Sold</th>
@@ -273,6 +273,7 @@ const ManageProducts = () => {
                 <td className="px-4 sm:px-6 py-2 text-gray-700">{(homeCurrentPage - 1) * ITEMS_PER_PAGE + index + 1}
                 </td>
                 <td className="px-4 sm:px-6 py-2 font-medium text-gray-800">{product.name}</td>
+                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.inventory}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">{product.costPrice ?? 0}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">
                   Rs. {product.price?.johrabad ?? "N/A"}
@@ -280,7 +281,6 @@ const ManageProducts = () => {
                 <td className="px-4 sm:px-6 py-2 text-gray-600">
                   Rs. {product.price?.other ?? "N/A"}
                 </td>
-                <td className="px-4 sm:px-6 py-2 text-gray-600">{product.inventory}</td>
                 <td className="px-4 sm:px-6 py-2 text-gray-600">
                   {(product?.inventory ?? 0) * (product?.costPrice ?? 0)}
 </td>
