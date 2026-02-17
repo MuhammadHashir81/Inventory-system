@@ -5,7 +5,8 @@
     deleteOneAdminProduct,
     updateAdminProduct,
     getLowStockProducts,
-    getSearchedItems
+    getSearchedItems,
+    getAllProuducts
   } from "../Controllers/adminProducts.controller.js";
 
   export const adminProductsRouter = express.Router();
@@ -16,3 +17,4 @@
   adminProductsRouter.put("/update/:id", updateAdminProduct);
   adminProductsRouter.get("/low-stock-products", getLowStockProducts);
   adminProductsRouter.get("/search",getSearchedItems)
+  adminProductsRouter.get("/get-all",getAllProuducts)

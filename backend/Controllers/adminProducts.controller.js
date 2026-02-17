@@ -148,3 +148,15 @@
     const items =await Product.find({name:{$regex:q,$options:'i'}}).limit(10)
     res.status(200).json({items})
   }
+
+
+  export const getAllProuducts = async (req,res) => {
+    try {
+      const products = await Product.find()
+      console.log(products)
+      res.status(200).json({products})
+    } catch (error) {
+      res.status(200).json({error})
+    }
+
+  }

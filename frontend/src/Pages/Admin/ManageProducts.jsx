@@ -35,6 +35,7 @@ const ManageProducts = () => {
   const [query, setQuery] = useState("")
   const [homeCurrentPage, setHomeCurrentPage] = useState(1)
   const [isSearching,setIsSearching] = useState(false)
+  const [totalCostOfAllProducts,setTotalCostOfAllProducts] = useState([])
 
 
   const [product, setProduct] = useState({
@@ -50,6 +51,21 @@ const ManageProducts = () => {
 
 
 
+  const fetchAllProducts = async() => {
+    const response = await fetch(`${apiUrl}/api/admin/products/get-all`)
+    const data = await response.json()
+    console.log(data.products)
+    setTotalCostOfAllProducts(data.products)
+    
+  }
+    const totalPrice =  totalCostOfAllProducts.reduce((sum,product)=>{
+    return sum + product.price.johrabad
+  },0)
+
+
+  useEffect(()=>{
+    fetchAllProducts()
+  },[products])
   const fetchResults = async (search) => {
     if (!search) {
       setResults([]);
@@ -176,9 +192,7 @@ const ManageProducts = () => {
 
   const displayProducts = query ? results : products
 
-  const totalCostOfAllProducts = displayProducts.reduce((sum,product)=>{
-    return sum + product.price.johrabad
-  },0)
+  
 
 
   return (
@@ -318,7 +332,7 @@ const ManageProducts = () => {
       <div className="bg-blue-200 flex justify-center mt-4">
 
       
-        <p className="text-`xl font-bold"> Total Inventory(Rs) PKR {totalCostOfAllProducts}</p>
+        <p className="text-`xl font-bold"> Total Inventory(Rs) PKR {totalPrice}</p>
 
       </div>
       <div className={` ${query.trim() ? 'hidden' : 'block'} flex items-center justify-center space-x-4 mt-10`}>
