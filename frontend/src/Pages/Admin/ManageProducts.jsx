@@ -59,7 +59,7 @@ const ManageProducts = () => {
     
   }
     const totalPrice =  totalCostOfAllProducts.reduce((sum,product)=>{
-    return sum + product.price.johrabad
+    return sum + (product.price.johrabad * product.inventory) 
   },0)
 
 
